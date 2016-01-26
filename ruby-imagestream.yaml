@@ -1,0 +1,44 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  creationTimestamp: null
+  name: ruby
+spec:
+  tags:
+  - name: "1.9"
+    from:
+      kind: DockerImage
+      name: getupcloud/ruby:1.9
+    annotations:
+      description: Build and run Ruby 1.9 applications
+      iconClass: icon-ruby
+      sampleRepo: https://github.com/openshift/ruby-ex.git
+      supports: ruby:1.9,ruby
+      tags: builder,ruby,ruby19
+      version: "1.9"
+  - name: "2.0"
+    from:
+      kind: DockerImage
+      name: openshift/ruby:2.0
+    annotations:
+      description: Build and run Ruby 2.0 applications
+      iconClass: icon-ruby
+      sampleRepo: https://github.com/openshift/ruby-ex.git
+      supports: ruby:2.0,ruby
+      tags: builder,ruby,ruby20
+      version: "2.0"
+  - name: "2.2"
+    from:
+      kind: DockerImage
+      name: openshift/ruby:2.2
+    annotations:
+      description: Build and run Ruby 2.2 applications
+      iconClass: icon-ruby
+      sampleRepo: https://github.com/openshift/ruby-ex.git
+      supports: ruby:2.2,ruby
+      tags: builder,ruby,ruby22
+      version: "2.2"
+  - name: latest
+    from:
+      kind: DockerImage
+      name: openshift/ruby:latest

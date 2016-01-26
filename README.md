@@ -1,2 +1,3 @@
-# Image Stream
-Our public collection of Image Streams for use on [OpenShift v3](https://github.com/openshift/origin/).
+# Public Origin Templates
+
+This is our collection os template files for [OpenShift Origin v3](https://github.com/openshift/origin/).
