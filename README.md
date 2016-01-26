@@ -1,2 +1,2 @@
 # image-stream
-Our public collection of Image Streams
+Our public collection of Image Streams for use on [OpenShift v3](https://github.com/openshift/origin/).
