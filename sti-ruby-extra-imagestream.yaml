@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  creationTimestamp: null
+  name: ruby-extra
+spec:
+  tags:
+  - name: "1.9"
+    annotations:
+      description: Build and run Ruby 1.9 applications, with extra packages
+      iconClass: icon-ruby
+      sampleRepo: https://github.com/getupcloud/rails3-ex.git
+      supports: ruby:1.9,ruby
+      tags: builder,ruby
+      version: "1.9"
+    from:
+      kind: DockerImage
+      name: getupcloud/sti-ruby-extra:1.9
