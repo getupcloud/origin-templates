@@ -16,3 +16,29 @@ spec:
     from:
       kind: DockerImage
       name: getupcloud/sti-ruby-extra:1.9
+  - name: "2.0"
+    annotations:
+      description: Build and run Ruby 2.0 applications
+      iconClass: icon-ruby
+      sampleRepo: https://github.com/getupcloud/rails3-ex.git
+      supports: ruby:2.0,ruby
+      tags: builder,ruby
+      version: "2.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/sti-ruby-extra:2.0
+  - name: "2.2"
+    annotations:
+      description: Build and run Ruby 2.2 applications
+      iconClass: icon-ruby
+      sampleRepo: https://github.com/getupcloud/rails3-ex.git
+      supports: ruby:2.2,ruby
+      tags: builder,ruby
+      version: "2.2"
+    from:
+      kind: DockerImage
+      name: getupcloud/sti-ruby-extra:2.2
+  - name: latest
+    from:
+      kind: ImageStreamTag
+      name: getupcloud/sti-ruby-extra:2.2
