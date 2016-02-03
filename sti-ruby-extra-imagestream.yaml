@@ -41,4 +41,4 @@ spec:
   - name: latest
     from:
       kind: ImageStreamTag
-      name: getupcloud/sti-ruby-extra:2.2
+      name: ruby-extra:2.2
