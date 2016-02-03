@@ -8,7 +8,7 @@ spec:
   - name: "1.9"
     from:
       kind: DockerImage
-      name: getupcloud/ruby:1.9
+      name: getupcloud/ruby-19-centos7:latest
     annotations:
       description: Build and run Ruby 1.9 applications
       iconClass: icon-ruby
@@ -19,7 +19,7 @@ spec:
   - name: "2.0"
     from:
       kind: DockerImage
-      name: openshift/ruby:2.0
+      name: openshift/ruby-20-centos7:latest
     annotations:
       description: Build and run Ruby 2.0 applications
       iconClass: icon-ruby
@@ -30,7 +30,7 @@ spec:
   - name: "2.2"
     from:
       kind: DockerImage
-      name: openshift/ruby:2.2
+      name: centos/ruby-22-centos7:latest
     annotations:
       description: Build and run Ruby 2.2 applications
       iconClass: icon-ruby
@@ -40,5 +40,5 @@ spec:
       version: "2.2"
   - name: latest
     from:
-      kind: DockerImage
-      name: openshift/ruby:latest
+      kind: ImageStreamTag
+      name: "2.2"
