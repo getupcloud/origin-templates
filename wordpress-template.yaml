@@ -1,0 +1,300 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: wordpress
+metadata:
+  annotations:
+    description: 'An Wordpress application with a MySQL database and Memcached '
+    iconClass: icon-php
+    tags: instant-app,php,wordpress,cms,mysql
+  creationTimestamp: 2016-02-05T21:21:54Z
+  name: wordpress-example
+  namespace: pepsico
+  resourceVersion: "4576751"
+  selfLink: /oapi/v1/namespaces/pepsico/templates/wordpress-example
+  uid: 7aa7d503-cc4e-11e5-9f30-000d3ac0312b
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes and load balances the application pods
+    name: wordpress
+  spec:
+    ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: wordpress
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: wordpress
+  spec:
+    host: ${APPLICATION_DOMAIN}
+    to:
+      kind: Service
+      name: wordpress
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+    name: wordpress
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      description: Defines how to build the application
+    name: wordpress
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: wordpress:latest
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        ref: ${SOURCE_REPOSITORY_REF}
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: php:5.6
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+    name: wordpress
+  spec:
+    replicas: 1
+    selector:
+      name: wordpress
+    strategy:
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          name: wordpress
+        name: wordpress
+      spec:
+        containers:
+        - env:
+          - name: DATABASE_SERVICE_NAME
+            value: ${DATABASE_SERVICE_NAME}
+          - name: DATABASE_NAME
+            value: ${DATABASE_NAME}
+          - name: DATABASE_USER
+            value: ${DATABASE_USER}
+          - name: DATABASE_PASSWORD
+            value: ${DATABASE_PASSWORD}
+          - name: MEMCACHED_SERVICE_NAME
+            value: ${MEMCACHED_SERVICE_NAME}
+          - name: WORDPRESS_SECRET_TOKEN
+            value: ${WORDPRESS_SECRET_TOKEN}
+          image: wordpress
+          name: wordpress
+          ports:
+          - containerPort: 8080
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - wordpress
+        from:
+          kind: ImageStreamTag
+          name: wordpress:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes the memcached server
+    name: memcached
+  spec:
+    ports:
+    - name: memcached
+      port: 11211
+      targetPort: 11211
+    selector:
+      name: memcached
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the memcached
+    name: memcached
+  spec:
+    replicas: 1
+    selector:
+      name: memcached
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: memcached
+        name: memcached
+      spec:
+        containers:
+        - env:
+          - name: MEMCACHED_MAX_MEMORY
+            value: ${MEMCACHED_MAX_MEMORY}
+          - name: MEMCACHED_MAX_CONNECTIONS
+            value: ${MEMCACHED_MAX_CONNECTIONS}
+          image: memcached
+          name: memcached
+          ports:
+          - containerPort: 11211
+    triggers:
+    - imageChangeParams:
+        automatic: false
+        containerNames:
+        - memcached
+        from:
+          kind: ImageStreamTag
+          name: memcached:latest
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes the database server
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+    selector:
+      name: ${DATABASE_SERVICE_NAME}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the database
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${DATABASE_SERVICE_NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: ${DATABASE_SERVICE_NAME}
+        name: ${DATABASE_SERVICE_NAME}
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_USER
+            value: ${DATABASE_USER}
+          - name: MYSQL_PASSWORD
+            value: ${DATABASE_PASSWORD}
+          - name: MYSQL_DATABASE
+            value: ${DATABASE_NAME}
+          image: mysql
+          name: mysql
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/mysql/data
+            name: ${DATABASE_SERVICE_NAME}-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext:
+          fsGroup: 1234
+        volumes:
+        - name: ${DATABASE_SERVICE_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${DATABASE_SERVICE_NAME}
+    triggers:
+    - imageChangeParams:
+        automatic: false
+        containerNames:
+        - mysql
+        from:
+          kind: ImageStreamTag
+          name: mysql:5.6
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+parameters:
+- description: The URL of the repository with your application source code
+  name: SOURCE_REPOSITORY_URL
+  value: https://github.com/getupcloud/wordpress-ex.git
+- description: Set this to a branch name, tag or other ref of your repository if you
+    are not using the default branch
+  name: SOURCE_REPOSITORY_REF
+- description: Set this to the relative path to your project if it is not in the root
+    of your repository
+  name: CONTEXT_DIR
+- description: The exposed hostname that will route to the CakePHP service, if left
+    blank a value will be defaulted.
+  name: APPLICATION_DOMAIN
+- description: A secret string used to configure the GitHub webhook
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+- description: Database service name
+  name: DATABASE_SERVICE_NAME
+  value: mysql
+- description: 'Database engine: postgresql, mysql or sqlite (default)'
+  name: DATABASE_ENGINE
+  value: mysql
+- description: Database name
+  name: DATABASE_NAME
+  value: wordpress
+- description: Database user name
+  name: DATABASE_USER
+  value: wordpress
+- description: Database user password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: DATABASE_PASSWORD
+- description: Max simultaneous connections
+  name: MEMCACHED_MAX_CONNECTIONS
+  value: "10000"
+- description: Max memory to use for items in megabytes
+  name: MEMCACHED_MAX_MEMORY
+  value: "409"
+- description: Set this to a long random string
+  from: '[\w]{50}'
+  generate: expression
+  name: WORDPRESS_SECRET_TOKEN
+- description: Volume space available for data, e.g. 512Mi, 2Gi
+  name: VOLUME_CAPACITY
+  required: true
+  value: 1Gi
