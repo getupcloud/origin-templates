@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: elasticsearch-template
+metadata:
+  annotations:
+    description: Elasticsearch is a distributed RESTful search engine built for the cloud.
+    iconClass: icon-elasticsearch
+    tags: cache,database,search,elasticsearch
+  creationTimestamp: null
+  name: elasticsearch
+
+objects:
+- kind: Service
+  apiVersion: v1
+  metadata:
+    annotations:
+      description: Exposes the elasticsearch server
+    name: ${ELASTICSEARCH_SERVICE_NAME}
+  spec:
+    ports:
+    - name: elasticsearch
+      port: 9200
+      targetPort: 9200
+    selector:
+      name: ${ELASTICSEARCH_SERVICE_NAME}
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: ${ELASTICSEARCH_SERVICE_NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${ELASTICSEARCH_VOLUME_CAPACITY}
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    creationTimestamp: null
+    name: ${ELASTICSEARCH_SERVICE_NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${ELASTICSEARCH_SERVICE_NAME}
+    strategy:
+      resources: {}
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: ${ELASTICSEARCH_SERVICE_NAME}
+      spec:
+        containers:
+        - capabilities: {}
+          env:
+          - name: ELASTICSEARCH_SERVICE_NAME
+            value: ${ELASTICSEARCH_SERVICE_NAME}
+          - name: ELASTICSEARCH_MAX_MEMORY
+            value: ${ELASTICSEARCH_MAX_MEMORY}
+          - name: ELASTICSEARCH_VOLUME_CAPACITY
+            value: ${ELASTICSEARCH_VOLUME_CAPACITY}
+          - name: ELASTICSEARCH_CLUSTER_NAME
+            value: ${ELASTICSEARCH_CLUSTER_NAME}
+          - name: ELASTICSEARCH_LOG_LEVEL
+            value: ${ELASTICSEARCH_LOG_LEVEL}
+          image: elasticsearch
+          imagePullPolicy: IfNotPresent
+          name: elasticsearch
+          ports:
+          - containerPort: 9200
+            protocol: TCP
+          resources: {}
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /elasticsearch/persistent
+            name: ${ELASTICSEARCH_SERVICE_NAME}-data
+          resources:
+            limits:
+              cpu: 293m
+              memory: 1024M
+            requests:
+              cpu: 146m
+              memory: 512M
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext:
+          fsGroup: 1234
+        volumes:
+        - name: ${ELASTICSEARCH_SERVICE_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${ELASTICSEARCH_SERVICE_NAME}
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: false
+        containerNames:
+        - elasticsearch
+        from:
+          kind: ImageStreamTag
+          name: elasticsearch:latest
+          namespace: openshift
+        lastTriggeredImage: ""
+  status: {}
+
+parameters:
+- name: ELASTICSEARCH_SERVICE_NAME
+  description: Elasticsearch service name
+  required: true
+  value: elasticsearch
+- name: ELASTICSEARCH_MAX_MEMORY
+  description: "Max memory Elasticsearch will use (format is [value][M|G])"
+  required: true
+  value: 1G
+- name: ELASTICSEARCH_VOLUME_CAPACITY
+  description: "Volume space available for data (format is [value][Mi|Gi])"
+  required: true
+  value: 1Gi
+- name: ELASTICSEARCH_CLUSTER_NAME
+  description: Elasticsearch cluster name
+  required: true
+  value: default-cluster
+- name: ELASTICSEARCH_LOG_LEVEL
+  description: Elasticsearch log level
+  required: true
+  value: INFO
