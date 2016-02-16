@@ -9,9 +9,10 @@ metadata:
     tags: cache,database,redis
   creationTimestamp: null
   name: redis
+
 objects:
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     name: ${REDIS_SERVICE_NAME}
@@ -29,8 +30,9 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
-- apiVersion: v1
-  kind: DeploymentConfig
+
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     creationTimestamp: null
     name: ${REDIS_SERVICE_NAME}
@@ -84,6 +86,7 @@ objects:
       type: ImageChange
     - type: ConfigChange
   status: {}
+
 parameters:
 - description: Redis service name
   name: REDIS_SERVICE_NAME

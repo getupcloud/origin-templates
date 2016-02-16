@@ -5,11 +5,11 @@ metadata:
   creationTimestamp: null
 spec:
   tags:
-    - name: latest
-      from:
-        Kind: ImageStreamTag
-        Name: "3.0"
     - name: "3.0"
       from:
         Kind: DockerImage
         Name: getupcloud/redis:latest
+    - name: latest
+      from:
+        Kind: ImageStreamTag
+        Name: "3.0"
