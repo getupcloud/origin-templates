@@ -442,19 +442,6 @@
             }
           },
           {
-            "name": "9.2",
-            "annotations": {
-              "description": "Provides a PostgreSQL v9.2 database",
-              "iconClass": "icon-postgresql",
-              "tags": "postgresql",
-              "version": "9.2"
-            },
-            "from": {
-              "kind": "DockerImage",
-              "name": "openshift/postgresql-92-centos7:latest"
-            }
-          },
-          {
             "name": "9.4",
             "annotations": {
               "description": "Provides a PostgreSQL v9.4 database",
@@ -464,7 +451,7 @@
             },
             "from": {
               "kind": "DockerImage",
-              "name": "centos/postgresql-94-centos7:latest"
+              "name": "getupcloud/postgresql-94-centos7:9.4"
             }
           }
         ]
