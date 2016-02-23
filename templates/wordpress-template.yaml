@@ -7,12 +7,9 @@ metadata:
     description: 'An Wordpress application with a MySQL database and Memcached '
     iconClass: icon-php
     tags: instant-app,php,wordpress,cms,mysql
-  creationTimestamp: 2016-02-05T21:21:54Z
-  name: wordpress-example
-  namespace: pepsico
-  resourceVersion: "4576751"
-  selfLink: /oapi/v1/namespaces/pepsico/templates/wordpress-example
-  uid: 7aa7d503-cc4e-11e5-9f30-000d3ac0312b
+  creationTimestamp: null
+  name: wordpress
+
 objects:
 - apiVersion: v1
   kind: Service
