@@ -207,24 +207,7 @@
                     "name": "DJANGO_SECRET_KEY",
                     "value": "${DJANGO_SECRET_KEY}"
                   }
-                ],
-                "volumeMounts": [
-                  {
-                    "name": "${DATABASE_SERVICE_NAME}-data",
-                    "mountPath": "/var/lib/pgsql"
-                  }
                 ]
-              }
-            ],
-            "securityContext": {
-              "fsGroup": 5678
-            },            
-            "volumes": [
-              {
-                "name": "${DATABASE_SERVICE_NAME}-data",
-                "persistentVolumeClaim": {
-                  "claimName": "${DATABASE_SERVICE_NAME}"
-                }
               }
             ]
           }
@@ -318,8 +301,29 @@
                   {
                     "name": "POSTGRESQL_DATABASE",
                     "value": "${DATABASE_NAME}"
+                  },
+                  {
+                    "name": "USER_PGDATA",
+                    "value": "/var/lib/pgsql/postgresql"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "${DATABASE_SERVICE_NAME}-data",
+                    "mountPath": "/var/lib/pgsql/postgresql"
                   }
                 ]
+              }
+            ],
+            "securityContext": {
+              "fsGroup": 5678
+            },            
+            "volumes": [
+              {
+                "name": "${DATABASE_SERVICE_NAME}-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${DATABASE_SERVICE_NAME}"
+                }
               }
             ]
           }

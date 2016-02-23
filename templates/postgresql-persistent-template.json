@@ -121,12 +121,16 @@
                   {
                     "name": "POSTGRESQL_DATABASE",
                     "value": "${POSTGRESQL_DATABASE}"
+                  },
+                  {
+                    "name": "USER_PGDATA",
+                    "value": "/var/lib/pgsql/postgresql"
                   }
                 ],
                 "volumeMounts": [
                   {
                     "name": "${DATABASE_SERVICE_NAME}-data",
-                    "mountPath": "/var/lib/pgsql"
+                    "mountPath": "/var/lib/pgsql/postgresql"
                   }
                 ],
                 "terminationMessagePath": "/dev/termination-log",
