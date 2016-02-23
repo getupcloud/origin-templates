@@ -1,0 +1,19 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: memcached
+  creationTimestamp: null
+spec:
+  tags:
+  - name: latest
+    annotations:
+      description: Memcached server
+      tags: memcached,cache,db
+      version: "1.4"
+    from:
+      kind: ImageStreamTag
+      name: "1.4"
+  - name: "1.4"
+    from:
+      kind: DockerImage
+      name: getupcloud/memcached:latest

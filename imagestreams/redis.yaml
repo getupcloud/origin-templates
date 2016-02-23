@@ -1,0 +1,19 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: redis
+  creationTimestamp: null
+spec:
+  tags:
+  - name: "3.0"
+    annotations:
+      description: Redis server
+      tags: redis,cache,db
+      version: "3.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/redis:latest
+  - name: latest
+    from:
+      kind: ImageStreamTag
+      name: "3.0"

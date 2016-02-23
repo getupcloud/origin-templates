@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  name: elasticsearch
+  creationTimestamp: null
+spec:
+  tags:
+  - name: "1.1"
+    annotations:
+      description: ElasticSearch search server.
+      tags: es,elaticsearch,db
+      version: "1.1"
+    from:
+      kind: DockerImage
+      name: getupcloud/elasticsearch:1.1
+  - name: latest
+    from:
+      kind: ImageStreamTag
+      name: "1.1"
