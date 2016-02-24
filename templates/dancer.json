@@ -46,6 +46,10 @@
         "to": {
           "kind": "Service",
           "name": "dancer-example"
+        },
+        "tls": {
+          "termination": "edge",
+          "insecureEdgeTerminationPolicy": "Allow"
         }
       }
     },

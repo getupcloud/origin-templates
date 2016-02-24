@@ -33,6 +33,9 @@ objects:
     to:
       kind: Service
       name: wordpress
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Allow
 - apiVersion: v1
   kind: ImageStream
   metadata:
