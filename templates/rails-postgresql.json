@@ -340,16 +340,12 @@
                   {
                     "name": "POSTGRESQL_SHARED_BUFFERS",
                     "value": "${POSTGRESQL_SHARED_BUFFERS}"
-                  },
-                  {
-                    "name": "USER_PGDATA",
-                    "value": "/var/lib/pgsql/postgresql"
                   }
                 ],
                 "volumeMounts": [
                   {
                     "name": "${DATABASE_SERVICE_NAME}-data",
-                    "mountPath": "/var/lib/pgsql/postgresql"
+                    "mountPath": "/var/lib/pgsql/data"
                   }
                 ]
               }
