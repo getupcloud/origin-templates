@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  annotations: null
+  creationTimestamp: null
+  name: cron
+spec:
+  tags:
+  - name: latest
+    from:
+      kind: ImageStreamTag
+      name: base
+  - name: base
+    annotations:
+      description: Cron for docker - base image
+      iconClass: icon-cron
+      sampleRepo: https://github.com/getupcloud/sti-cron.git
+      supports: cron:1.0,cron
+      tags: builder,cron,jobs
+      version: "1.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/cron-base-centos7
+  - name: ruby19
+    annotations:
+      description: Cron for docker - ruby-1.9 image
+      iconClass: icon-cron
+      sampleRepo: https://github.com/getupcloud/sti-cron.git
+      supports: cron:1.0,cron,ruby:1.9,ruby
+      tags: builder,cron,jobs,ruby
+      version: "1.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/cron-ruby-19-centos7
