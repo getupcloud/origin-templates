@@ -46,6 +46,10 @@
         "to": {
           "kind": "Service",
           "name": "nodejs-example"
+        },
+        "tls": {
+          "termination": "edge",
+          "insecureEdgeTerminationPolicy": "Allow"
         }
       }
     },

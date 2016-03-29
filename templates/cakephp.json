@@ -46,6 +46,10 @@
         "to": {
           "kind": "Service",
           "name": "cakephp-example"
+        },
+        "tls": {
+          "termination": "edge",
+          "insecureEdgeTerminationPolicy": "Allow"
         }
       }
     },
