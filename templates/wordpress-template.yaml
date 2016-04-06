@@ -72,6 +72,9 @@ objects:
     - github:
         secret: ${GITHUB_WEBHOOK_SECRET}
       type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
@@ -268,6 +271,10 @@ parameters:
   from: '[a-zA-Z0-9]{40}'
   generate: expression
   name: GITHUB_WEBHOOK_SECRET
+- description: A secret string used to configure the Generic webhook
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
 - description: Database service name
   name: DATABASE_SERVICE_NAME
   value: mysql
