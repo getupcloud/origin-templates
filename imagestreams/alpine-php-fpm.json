@@ -1,0 +1,48 @@
+{
+    "kind": "ImageStreamList",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "alpine-php-fpm",
+                "creationTimestamp": null
+            },
+            "spec": {
+                "tags": [
+                    {
+                        "name": "7",
+                        "annotations": {
+                            "description": "Build and run PHP 7 applications using FPM",
+                            "iconClass": "icon-php",
+                            "tags": "builder,php",
+                            "supports": "php:7,php",
+                            "version": "7",
+                            "sampleRepo": "https://github.com/caruccio/php-test.git"
+                        },
+                        "from": {
+                            "kind": "DockerImage",
+                            "name": "caruccio/s2i-caddy-fpm7:latest"
+                        }
+                    },
+                    {
+                        "name": "latest",
+                        "annotations": {
+                            "description": "Build and run PHP 7 applications using FPM",
+                            "iconClass": "icon-php",
+                            "tags": "builder,php",
+                            "supports": "php",
+                            "sampleRepo": "https://github.com/caruccio/php-test.git"
+                        },
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "name": "7"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
