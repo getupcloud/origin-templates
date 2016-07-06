@@ -32,3 +32,25 @@ spec:
     from:
       kind: DockerImage
       name: getupcloud/cron-ruby-19-centos7
+  - name: ruby20
+    annotations:
+      description: Cron for docker - ruby-2.0 image
+      iconClass: icon-cron
+      sampleRepo: https://github.com/getupcloud/sti-cron.git
+      supports: cron:1.0,cron,ruby:2.0,ruby
+      tags: builder,cron,jobs,ruby
+      version: "1.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/cron-ruby-20-centos7
+  - name: php56
+    annotations:
+      description: Cron for docker - php-5.6 image
+      iconClass: icon-cron
+      sampleRepo: https://github.com/getupcloud/sti-cron.git
+      supports: cron:1.0,cron,php:5.6,php
+      tags: builder,cron,jobs,php
+      version: "1.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/cron-php-56-centos7
