@@ -13,7 +13,7 @@ spec:
   - name: base
     annotations:
       description: Cron for docker - base image
-      iconClass: icon-cron
+      iconClass: icon-mascot
       sampleRepo: https://github.com/getupcloud/sti-cron.git
       supports: cron:1.0,cron
       tags: builder,cron,jobs
@@ -24,7 +24,7 @@ spec:
   - name: ruby19
     annotations:
       description: Cron for docker - ruby-1.9 image
-      iconClass: icon-cron
+      iconClass: icon-ruby
       sampleRepo: https://github.com/getupcloud/sti-cron.git
       supports: cron:1.0,cron,ruby:1.9,ruby
       tags: builder,cron,jobs,ruby
@@ -35,7 +35,7 @@ spec:
   - name: ruby20
     annotations:
       description: Cron for docker - ruby-2.0 image
-      iconClass: icon-cron
+      iconClass: icon-ruby
       sampleRepo: https://github.com/getupcloud/sti-cron.git
       supports: cron:1.0,cron,ruby:2.0,ruby
       tags: builder,cron,jobs,ruby
@@ -46,7 +46,7 @@ spec:
   - name: php56
     annotations:
       description: Cron for docker - php-5.6 image
-      iconClass: icon-cron
+      iconClass: icon-php
       sampleRepo: https://github.com/getupcloud/sti-cron.git
       supports: cron:1.0,cron,php:5.6,php
       tags: builder,cron,jobs,php
