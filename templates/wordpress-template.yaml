@@ -16,23 +16,23 @@ objects:
   metadata:
     annotations:
       description: Exposes and load balances the application pods
-    name: wordpress
+    name: ${NAME}
   spec:
     ports:
     - name: web
       port: 8080
       targetPort: 8080
     selector:
-      name: wordpress
+      name: ${NAME}
 - apiVersion: v1
   kind: Route
   metadata:
-    name: wordpress
+    name: ${NAME}
   spec:
     host: ${APPLICATION_DOMAIN}
     to:
       kind: Service
-      name: wordpress
+      name: ${NAME}
     tls:
       termination: edge
       insecureEdgeTerminationPolicy: Allow
@@ -41,18 +41,18 @@ objects:
   metadata:
     annotations:
       description: Keeps track of changes in the application image
-    name: wordpress
+    name: ${NAME}
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     annotations:
       description: Defines how to build the application
-    name: wordpress
+    name: ${NAME}
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: wordpress:latest
+        name: ${NAME}:latest
     source:
       contextDir: ${CONTEXT_DIR}
       git:
@@ -90,18 +90,18 @@ objects:
   metadata:
     annotations:
       description: Defines how to deploy the application server
-    name: wordpress
+    name: ${NAME}
   spec:
     replicas: 1
     selector:
-      name: wordpress
+      name: ${NAME}
     strategy:
       type: Rolling
     template:
       metadata:
         labels:
-          name: wordpress
-        name: wordpress
+          name: ${NAME}
+        name: ${NAME}
       spec:
         containers:
         - env:
@@ -117,7 +117,7 @@ objects:
             value: ${MEMCACHED_SERVICE_NAME}
           - name: WORDPRESS_SECRET_TOKEN
             value: ${WORDPRESS_SECRET_TOKEN}
-          image: wordpress
+          image: ${NAME}
           name: wordpress
           ports:
           - containerPort: 8080
@@ -128,7 +128,7 @@ objects:
         - wordpress
         from:
           kind: ImageStreamTag
-          name: wordpress:latest
+          name: ${NAME}:latest
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -136,31 +136,31 @@ objects:
   metadata:
     annotations:
       description: Exposes the memcached server
-    name: memcached
+    name: ${MEMCACHED_SERVICE_NAME}
   spec:
     ports:
-    - name: memcached
+    - name: ${MEMCACHED_SERVICE_NAME}
       port: 11211
       targetPort: 11211
     selector:
-      name: memcached
+      name: ${MEMCACHED_SERVICE_NAME}
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
     annotations:
       description: Defines how to deploy the memcached
-    name: memcached
+    name: ${MEMCACHED_SERVICE_NAME}
   spec:
     replicas: 1
     selector:
-      name: memcached
+      name: ${MEMCACHED_SERVICE_NAME}
     strategy:
       type: Recreate
     template:
       metadata:
         labels:
-          name: memcached
-        name: memcached
+          name: ${MEMCACHED_SERVICE_NAME}
+        name: ${MEMCACHED_SERVICE_NAME}
       spec:
         containers:
         - env:
@@ -255,6 +255,9 @@ objects:
       type: ImageChange
     - type: ConfigChange
 parameters:
+- description: The exposed hostname that will route to the CakePHP service, if left blank a value will be defaulted.
+  name: NAME
+  value: wordpress
 - description: The URL of the repository with your application source code
   name: SOURCE_REPOSITORY_URL
   value: https://github.com/getupcloud/wordpress-ex.git
@@ -278,6 +281,9 @@ parameters:
 - description: Database service name
   name: DATABASE_SERVICE_NAME
   value: mysql
+- description: Memcached service name
+  name: MEMCACHED_SERVICE_NAME
+  value: memcached
 - description: 'Database engine: postgresql, mysql or sqlite (default)'
   name: DATABASE_ENGINE
   value: mysql
@@ -303,5 +309,6 @@ parameters:
   name: WORDPRESS_SECRET_TOKEN
 - description: Volume space available for data, e.g. 512Mi, 2Gi
   name: VOLUME_CAPACITY
+  displayName: 'Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]'
   required: true
   value: 1Gi

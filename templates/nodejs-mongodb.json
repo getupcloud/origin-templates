@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "nodejs-mongodb-example",
+    "name": "nodejs-mongodb",
     "annotations": {
       "description": "An example Node.js application with a MongoDB database",
       "tags": "instant-app,nodejs,mongodb",
@@ -10,14 +10,14 @@
     }
   },
   "labels": {
-    "template": "nodejs-mongodb-example"
+    "template": "nodejs-mongodb"
   },
   "objects": [
     {
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-mongodb-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Exposes and load balances the application pods"
         }
@@ -31,7 +31,7 @@
           }
         ],
         "selector": {
-          "name": "nodejs-mongodb-example"
+          "name": "${NAME}"
         }
       }
     },
@@ -56,13 +56,13 @@
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-mongodb-example"
+        "name": "${NAME}"
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
-          "name": "nodejs-mongodb-example"
+          "name": "${NAME}"
         },
         "tls": {
           "termination": "edge",
@@ -74,7 +74,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-mongodb-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Keeps track of changes in the application image"
         }
@@ -84,7 +84,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-mongodb-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to build the application"
         }
@@ -104,14 +104,14 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "openshift",
-              "name": "nodejs:0.10"
+              "name": "nodejs:lts"
             }
           }
         },
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "nodejs-mongodb-example:latest"
+            "name": "${NAME}:latest"
           }
         },
         "triggers": [
@@ -140,7 +140,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-mongodb-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to deploy the application server"
         }
@@ -155,11 +155,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "nodejs-mongodb-example"
+                "nodejs"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "nodejs-mongodb-example:latest"
+                "name": "${NAME}:latest"
               }
             }
           },
@@ -169,20 +169,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "nodejs-mongodb-example"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
-            "name": "nodejs-mongodb-example",
+            "name": "${NAME}",
             "labels": {
-              "name": "nodejs-mongodb-example"
+              "name": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "nodejs-mongodb-example",
-                "image": "nodejs-mongodb-example",
+                "name": "nodejs",
+                "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
@@ -262,7 +262,7 @@
               "from": {
                 "kind": "ImageStreamTag",
                 "namespace": "openshift",
-                "name": "mongodb:2.6"
+                "name": "mongodb:3.2"
               }
             }
           },
@@ -318,7 +318,7 @@
               }
             ],
             "securityContext": {
-              "fsGroup": 5678
+               "fsGroup": 5678
             },
             "volumes": [
               {
@@ -334,6 +334,16 @@
     }
   ],
   "parameters": [
+    {
+      "name": "NAME",
+      "description": "The exposed hostname that will route to the Nodejs service, if left blank a value will be defaulted.",
+      "value": "nodejs"
+    },
+    {
+      "name": "SOURCE_REPOSITORY_URL",
+      "description": "The URL of the repository with your application source code",
+      "value": "https://github.com/openshift/django-ex.git"
+    },
     {
       "name": "SOURCE_REPOSITORY_URL",
       "description": "The URL of the repository with your application source code",
@@ -394,7 +404,7 @@
     },
     {
       "name": "VOLUME_CAPACITY",
-      "displayName": "Volume capacity",
+      "displayName": "Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]",
       "description": "Volume space available for data, e.g. 512Mi, 2Gi",
       "value": "1Gi",
       "required": true

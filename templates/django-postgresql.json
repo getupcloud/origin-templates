@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "django-psql-example",
+    "name": "django-psql",
     "annotations": {
       "description": "An example Django application with a PostgreSQL database",
       "tags": "instant-app,python,django,postgresql",
@@ -10,14 +10,14 @@
     }
   },
   "labels": {
-    "template": "django-psql-example"
+    "template": "django-psql"
   },
   "objects": [
     {
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-psql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Exposes and load balances the application pods"
         }
@@ -31,7 +31,7 @@
           }
         ],
         "selector": {
-          "name": "django-psql-example"
+          "name": "${NAME}"
         }
       }
     },
@@ -39,13 +39,13 @@
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-psql-example"
+        "name": "${NAME}"
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
-          "name": "django-psql-example"
+          "name": "${NAME}"
         },
         "tls": {
           "termination": "edge",
@@ -74,7 +74,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-psql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Keeps track of changes in the application image"
         }
@@ -84,7 +84,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-psql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to build the application"
         }
@@ -111,7 +111,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "django-psql-example:latest"
+            "name": "${NAME}:latest"
           }
         },
         "triggers": [
@@ -134,7 +134,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-psql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to deploy the application server"
         }
@@ -149,11 +149,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "django-psql-example"
+                "python"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "django-psql-example:latest"
+                "name": "${NAME}:latest"
               }
             }
           },
@@ -163,20 +163,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "django-psql-example"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
-            "name": "django-psql-example",
+            "name": "${NAME}",
             "labels": {
-              "name": "django-psql-example"
+              "name": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "django-psql-example",
-                "image": "django-psql-example",
+                "name": "django",
+                "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
@@ -316,8 +316,8 @@
               }
             ],
             "securityContext": {
-              "fsGroup": 5678
-            },            
+               "fsGroup": 5678
+            },
             "volumes": [
               {
                 "name": "${DATABASE_SERVICE_NAME}-data",
@@ -332,6 +332,11 @@
     }
   ],
   "parameters": [
+    {
+      "name": "NAME",
+      "description": "The exposed hostname that will route to the Django service, if left blank a value will be defaulted.",
+      "value": "djangopsql"
+    },
     {
       "name": "SOURCE_REPOSITORY_URL",
       "description": "The URL of the repository with your application source code",
@@ -394,7 +399,7 @@
     },
     {
       "name": "VOLUME_CAPACITY",
-      "displayName": "Volume capacity",
+      "displayName": "Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]",
       "description": "Volume space available for data, e.g. 512Mi, 2Gi",
       "value": "1Gi",
       "required": true

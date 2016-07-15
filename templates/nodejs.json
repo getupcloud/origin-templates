@@ -2,22 +2,22 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "nodejs-example",
+    "name": "nodejs",
     "annotations": {
-      "description": "An example Node.js application with no database",
+      "description": "An example Node.js application",
       "tags": "instant-app,nodejs",
       "iconClass": "icon-nodejs"
     }
   },
   "labels": {
-    "template": "nodejs-example"
+    "template": "nodejs"
   },
   "objects": [
     {
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Exposes and load balances the application pods"
         }
@@ -31,7 +31,7 @@
           }
         ],
         "selector": {
-          "name": "nodejs-example"
+          "name": "${NAME}"
         }
       }
     },
@@ -39,13 +39,13 @@
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-example"
+        "name": "${NAME}"
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
-          "name": "nodejs-example"
+          "name": "${NAME}"
         },
         "tls": {
           "termination": "edge",
@@ -57,7 +57,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Keeps track of changes in the application image"
         }
@@ -67,7 +67,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to build the application"
         }
@@ -87,14 +87,14 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "openshift",
-              "name": "nodejs:0.10"
+              "name": "nodejs:lts"
             }
           }
         },
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "nodejs-example:latest"
+            "name": "${NAME}:latest"
           }
         },
         "triggers": [
@@ -123,7 +123,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "nodejs-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to deploy the application server"
         }
@@ -138,11 +138,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "nodejs-example"
+                "nodejs"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "nodejs-example:latest"
+                "name": "${NAME}:latest"
               }
             }
           },
@@ -152,20 +152,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "nodejs-example"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
-            "name": "nodejs-example",
+            "name": "${NAME}",
             "labels": {
-              "name": "nodejs-example"
+              "name": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "nodejs-example",
-                "image": "nodejs-example",
+                "name": "nodejs",
+                "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
@@ -178,19 +178,19 @@
                   },
                   {
                     "name": "MONGODB_USER",
-                    "value": "${MONGODB_USER}"
+                    "value": "${DATABASE_USER}"
                   },
                   {
                     "name": "MONGODB_PASSWORD",
-                    "value": "${MONGODB_PASSWORD}"
+                    "value": "${DATABASE_PASSWORD}"
                   },
                   {
                     "name": "MONGODB_DATABASE",
-                    "value": "${MONGODB_DATABASE}"
+                    "value": "${DATABASE_NAME}"
                   },
                   {
                     "name": "MONGODB_ADMIN_PASSWORD",
-                    "value": "${MONGODB_ADMIN_PASSWORD}"
+                    "value": "${DATABASE_ADMIN_PASSWORD}"
                   }
                 ]
               }

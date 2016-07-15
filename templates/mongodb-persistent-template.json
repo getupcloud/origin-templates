@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "mongodb-persistent",
+    "name": "mongodb",
     "creationTimestamp": null,
     "annotations": {
       "description": "MongoDB database service, with persistent storage. Scaling to more than one replica is not supported",
@@ -15,7 +15,7 @@
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}",
+        "name": "${NAME}",
         "creationTimestamp": null
       },
       "spec": {
@@ -29,7 +29,7 @@
           }
         ],
         "selector": {
-          "name": "${DATABASE_SERVICE_NAME}"
+          "name": "${NAME}"
         },
         "portalIP": "",
         "type": "ClusterIP",
@@ -43,7 +43,7 @@
       "kind": "PersistentVolumeClaim",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}"
+        "name": "${NAME}"
       },
       "spec": {
         "accessModes": [
@@ -60,7 +60,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${DATABASE_SERVICE_NAME}",
+        "name": "${NAME}",
         "creationTimestamp": null
       },
       "spec": {
@@ -77,7 +77,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "mongodb:latest",
+                "name": "mongodb:3.2",
                 "namespace": "openshift"
               },
               "lastTriggeredImage": ""
@@ -89,13 +89,13 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "${DATABASE_SERVICE_NAME}"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
             "creationTimestamp": null,
             "labels": {
-              "name": "${DATABASE_SERVICE_NAME}"
+              "name": "${NAME}"
             }
           },
           "spec": {
@@ -136,7 +136,7 @@
                 ],
                 "volumeMounts": [
                   {
-                    "name": "${DATABASE_SERVICE_NAME}-data",
+                    "name": "${NAME}-data",
                     "mountPath": "/var/lib/mongodb/data"
                   }
                 ],
@@ -150,13 +150,13 @@
               }
             ],
             "securityContext": {
-              "fsGroup": 5678
+               "fsGroup": 5678
             },
             "volumes": [
               {
-                "name": "${DATABASE_SERVICE_NAME}-data",
+                "name": "${NAME}-data",
                 "persistentVolumeClaim": {
-                  "claimName": "${DATABASE_SERVICE_NAME}"
+                  "claimName": "${NAME}"
                 }
               }
             ],
@@ -170,7 +170,7 @@
   ],
   "parameters": [
     {
-      "name": "DATABASE_SERVICE_NAME",
+      "name": "NAME",
       "displayName": "Database service name",
       "description": "The name of the OpenShift Service exposed for the database",
       "value": "mongodb",
@@ -209,7 +209,7 @@
     },
     {
       "name": "VOLUME_CAPACITY",
-      "displayName": "Volume capacity",
+      "displayName": "Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]",
       "description": "Volume space available for data, e.g. 512Mi, 2Gi",
       "value": "1Gi",
       "required": true

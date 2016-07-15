@@ -2,22 +2,22 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "django-example",
+    "name": "django",
     "annotations": {
-      "description": "An example Django application with no database",
+      "description": "An example Django application",
       "tags": "instant-app,python,django",
       "iconClass": "icon-python"
     }
   },
   "labels": {
-    "template": "django-example"
+    "template": "django-psql"
   },
   "objects": [
     {
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Exposes and load balances the application pods"
         }
@@ -31,7 +31,7 @@
           }
         ],
         "selector": {
-          "name": "django-example"
+          "name": "${NAME}"
         }
       }
     },
@@ -39,13 +39,13 @@
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-example"
+        "name": "${NAME}"
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
-          "name": "django-example"
+          "name": "${NAME}"
         },
         "tls": {
           "termination": "edge",
@@ -57,7 +57,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Keeps track of changes in the application image"
         }
@@ -67,7 +67,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to build the application"
         }
@@ -94,7 +94,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "django-example:latest"
+            "name": "${NAME}:latest"
           }
         },
         "triggers": [
@@ -117,7 +117,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "django-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to deploy the application server"
         }
@@ -132,11 +132,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "django-example"
+                "python"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "django-example:latest"
+                "name": "${NAME}:latest"
               }
             }
           },
@@ -146,20 +146,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "django-example"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
-            "name": "django-example",
+            "name": "${NAME}",
             "labels": {
-              "name": "django-example"
+              "name": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "django-example",
-                "image": "django-example",
+                "name": "django",
+                "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
@@ -203,6 +203,11 @@
     }
   ],
   "parameters": [
+    {
+      "name": "NAME",
+      "description": "The exposed hostname that will route to the Django service, if left blank a value will be defaulted.",
+      "value": "django"
+    },
     {
       "name": "SOURCE_REPOSITORY_URL",
       "description": "The URL of the repository with your application source code",

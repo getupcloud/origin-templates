@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: elasticsearch-template
+  template: elasticsearch
 metadata:
   annotations:
     description: Elasticsearch is a distributed RESTful search engine built for the cloud.
@@ -16,19 +16,19 @@ objects:
   metadata:
     annotations:
       description: Exposes the elasticsearch server
-    name: ${ELASTICSEARCH_SERVICE_NAME}
+    name: ${NAME}
   spec:
     ports:
     - name: elasticsearch
       port: 9200
       targetPort: 9200
     selector:
-      name: ${ELASTICSEARCH_SERVICE_NAME}
+      name: ${NAME}
 
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
-    name: ${ELASTICSEARCH_SERVICE_NAME}
+    name: ${NAME}
   spec:
     accessModes:
     - ReadWriteOnce
@@ -40,11 +40,11 @@ objects:
   apiVersion: v1
   metadata:
     creationTimestamp: null
-    name: ${ELASTICSEARCH_SERVICE_NAME}
+    name: ${NAME}
   spec:
     replicas: 1
     selector:
-      name: ${ELASTICSEARCH_SERVICE_NAME}
+      name: ${NAME}
     strategy:
       resources: {}
       type: Recreate
@@ -52,13 +52,13 @@ objects:
       metadata:
         creationTimestamp: null
         labels:
-          name: ${ELASTICSEARCH_SERVICE_NAME}
+          name: ${NAME}
       spec:
         containers:
         - capabilities: {}
           env:
           - name: ELASTICSEARCH_SERVICE_NAME
-            value: ${ELASTICSEARCH_SERVICE_NAME}
+            value: ${NAME}
           - name: ELASTICSEARCH_MAX_MEMORY
             value: ${ELASTICSEARCH_MAX_MEMORY}
           - name: ELASTICSEARCH_VOLUME_CAPACITY
@@ -80,7 +80,7 @@ objects:
           terminationMessagePath: /dev/termination-log
           volumeMounts:
           - mountPath: /elasticsearch/persistent
-            name: ${ELASTICSEARCH_SERVICE_NAME}-data
+            name: ${NAME}-data
           resources:
             limits:
               cpu: 293m
@@ -93,9 +93,9 @@ objects:
         securityContext:
           fsGroup: 1234
         volumes:
-        - name: ${ELASTICSEARCH_SERVICE_NAME}-data
+        - name: ${NAME}-data
           persistentVolumeClaim:
-            claimName: ${ELASTICSEARCH_SERVICE_NAME}
+            claimName: ${NAME}
     triggers:
     - type: ConfigChange
     - type: ImageChange
@@ -111,7 +111,7 @@ objects:
   status: {}
 
 parameters:
-- name: ELASTICSEARCH_SERVICE_NAME
+- name: NAME
   description: Elasticsearch service name
   required: true
   value: elasticsearch
@@ -122,6 +122,7 @@ parameters:
 - name: ELASTICSEARCH_VOLUME_CAPACITY
   description: "Volume space available for data (format is [value][Mi|Gi])"
   required: true
+  displayName: 'Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]'
   value: 1Gi
 - name: ELASTICSEARCH_CLUSTER_NAME
   description: Elasticsearch cluster name

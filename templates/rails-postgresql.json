@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "rails-postgresql-example",
+    "name": "rails-postgresql",
     "annotations": {
       "description": "An example Rails application with a PostgreSQL database",
       "tags": "instant-app,ruby,rails,postgresql",
@@ -10,14 +10,14 @@
     }
   },
   "labels": {
-    "template": "rails-postgresql-example"
+    "template": "rails-postgresql"
   },
   "objects": [
     {
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "rails-postgresql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Exposes and load balances the application pods"
         }
@@ -31,7 +31,7 @@
           }
         ],
         "selector": {
-          "name": "rails-postgresql-example"
+          "name": "${NAME}"
         }
       }
     },
@@ -39,13 +39,13 @@
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "rails-postgresql-example"
+        "name": "${NAME}"
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
-          "name": "rails-postgresql-example"
+          "name": "${NAME}"
         },
         "tls": {
           "termination": "edge",
@@ -74,7 +74,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "rails-postgresql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Keeps track of changes in the application image"
         }
@@ -84,7 +84,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "rails-postgresql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to build the application"
         }
@@ -104,14 +104,14 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "openshift",
-              "name": "ruby:2.2"
+              "name": "ruby:2.3"
             }
           }
         },
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "rails-postgresql-example:latest"
+            "name": "${NAME}:latest"
           }
         },
         "triggers": [
@@ -134,7 +134,7 @@
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "rails-postgresql-example",
+        "name": "${NAME}",
         "annotations": {
           "description": "Defines how to deploy the application server"
         }
@@ -149,7 +149,7 @@
                 "command": [
                   "./migrate-database.sh"
                 ],
-                "containerName": "rails-postgresql-example"
+                "containerName": "ruby"
               }
             }
           }
@@ -160,11 +160,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "rails-postgresql-example"
+                "ruby"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "rails-postgresql-example:latest"
+                "name": "${NAME}:latest"
               }
             }
           },
@@ -174,20 +174,20 @@
         ],
         "replicas": 1,
         "selector": {
-          "name": "rails-postgresql-example"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
-            "name": "rails-postgresql-example",
+            "name": "${NAME}",
             "labels": {
-              "name": "rails-postgresql-example"
+              "name": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "rails-postgresql-example",
-                "image": "rails-postgresql-example",
+                "name": "ruby",
+                "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
@@ -355,8 +355,8 @@
               }
             ],
             "securityContext": {
-              "fsGroup": 5678
-            },            
+               "fsGroup": 5678
+            },
             "volumes": [
               {
                 "name": "${DATABASE_SERVICE_NAME}-data",
@@ -371,6 +371,11 @@
     }
   ],
   "parameters": [
+    {
+      "name": "NAME",
+      "description": "The exposed hostname that will route to the Rails service, if left blank a value will be defaulted.",
+      "value": "dancermysql"
+    },
     {
       "name": "SOURCE_REPOSITORY_URL",
       "description": "The URL of the repository with your application source code",
@@ -450,9 +455,9 @@
     },
     {
       "name": "VOLUME_CAPACITY",
-      "displayName": "Volume capacity",
       "description": "Volume space available for data, e.g. 512Mi, 2Gi",
       "value": "1Gi",
+      "displayName": "Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]",
       "required": true
     }    
   ]
