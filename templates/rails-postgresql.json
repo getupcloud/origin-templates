@@ -374,7 +374,7 @@
     {
       "name": "NAME",
       "description": "The exposed hostname that will route to the Rails service, if left blank a value will be defaulted.",
-      "value": "dancermysql"
+      "value": "railspostgresql"
     },
     {
       "name": "SOURCE_REPOSITORY_URL",
