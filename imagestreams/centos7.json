@@ -326,6 +326,21 @@
               "kind": "DockerImage",
               "name": "centos/php-56-centos7:latest"
             }
+          },
+          {
+            "name": "7.0",
+            "annotations": {
+              "description": "Build and run PHP 7.0 applications",
+              "iconClass": "icon-php",
+              "tags": "builder,php",
+              "supports":"php:7.0,php",
+              "version": "7.0",
+              "sampleRepo": "https://github.com/openshift/cakephp-ex.git"
+            },
+            "from": {
+              "kind": "DockerImage",
+              "name": "getupcloud/php-70-centos7:latest"
+            }
           }
         ]
       }
