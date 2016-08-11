@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  creationTimestamp: null
+  name: sti-dotnet
+  annotations:
+    getup.io/display-name: .NET Core 1.0
+spec:
+  tags:
+  - annotations:
+      getup.io/display-name: .NET Core 1.0
+    from:
+      kind: ImageStreamTag
+      name: core-1.0
+    name: latest
+  - annotations:
+      getup.io/display-name: .NET Core 1.0
+      description: Platform for building and running .NET applications
+      iconClass: icon-dotnet
+      sampleRepo: https://github.com/getupcloud/dotnet-ex.git
+      supports: dotnet,aspnet
+      tags: builder,.net,.netcore,dotnet,dotnetcore,asp.net,asp.netcore
+    from:
+      kind: DockerImage
+      name: getupcloud/dotnet-core-10-centos7
+    importPolicy: {}
+    name: core-1.0
+status:
+  dockerImageRepository: ""
