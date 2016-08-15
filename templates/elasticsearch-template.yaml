@@ -122,7 +122,7 @@ parameters:
 - name: ELASTICSEARCH_VOLUME_CAPACITY
   description: "Volume space available for data (format is [value][Mi|Gi])"
   required: true
-  displayName: 'Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]'
+  displayName: 'Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]'
   value: 1Gi
 - name: ELASTICSEARCH_CLUSTER_NAME
   description: Elasticsearch cluster name

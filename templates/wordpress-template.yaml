@@ -307,8 +307,8 @@ parameters:
   from: '[\w]{50}'
   generate: expression
   name: WORDPRESS_SECRET_TOKEN
-- description: Volume space available for data, e.g. 512Mi, 2Gi
+- description: Volume space available for data
   name: VOLUME_CAPACITY
-  displayName: 'Tamanho do Volume de dados [select:1Gi=1GB:5Gi=5GB:10Gi=10GB]'
+  displayName: 'Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]'
   required: true
   value: 1Gi
