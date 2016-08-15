@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ImageStream
 metadata:
   creationTimestamp: null
-  name: sti-dotnet
+  name: dotnet
   annotations:
     getup.io/display-name: .NET Core 1.0
 spec:
