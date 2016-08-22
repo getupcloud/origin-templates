@@ -6,7 +6,7 @@
     "annotations": {
       "description": "An example Django application with a PostgreSQL database",
       "tags": "instant-app,python,django,postgresql",
-      "iconClass": "icon-python"
+      "iconClass": "icon-django"
     }
   },
   "labels": {
@@ -104,7 +104,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "openshift",
-              "name": "python:3.4"
+              "name": "python:3.5"
             }
           }
         },
@@ -136,7 +136,8 @@
       "metadata": {
         "name": "${NAME}",
         "annotations": {
-          "description": "Defines how to deploy the application server"
+          "description": "Defines how to deploy the application server",
+          "iconClass": "icon-python"
         }
       },
       "spec": {
@@ -149,7 +150,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "python"
+                "python-django"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -175,13 +176,29 @@
           "spec": {
             "containers": [
               {
-                "name": "django",
+                "name": "python-django",
                 "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 30,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
                 "env": [
                   {
                     "name": "DATABASE_SERVICE_NAME",
@@ -246,7 +263,8 @@
       "metadata": {
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
-          "description": "Defines how to deploy the database"
+          "description": "Defines how to deploy the database",
+          "iconClass": "icon-postgresql"
         }
       },
       "spec": {
@@ -257,14 +275,14 @@
           {
             "type": "ImageChange",
             "imageChangeParams": {
-              "automatic": false,
+              "automatic": true,
               "containerNames": [
                 "postgresql"
               ],
               "from": {
                 "kind": "ImageStreamTag",
                 "namespace": "openshift",
-                "name": "postgresql:9.4"
+                "name": "postgresql:9.5"
               }
             }
           },
@@ -287,7 +305,7 @@
             "containers": [
               {
                 "name": "postgresql",
-                "image": "postgresql",
+                "image": " ",
                 "ports": [
                   {
                     "containerPort": 5432
@@ -312,7 +330,21 @@
                     "name": "${DATABASE_SERVICE_NAME}-data",
                     "mountPath": "/var/lib/pgsql/data"
                   }
-                ]
+                ],
+                "readinessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 5,
+                  "exec": {
+                    "command": [ "/bin/sh", "-i", "-c", "psql -h 127.0.0.1 -U ${POSTGRESQL_USER} -q -d ${POSTGRESQL_DATABASE} -c 'SELECT 1'"]
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 30,
+                  "tcpSocket": {
+                    "port": 5432
+                  }
+                }
               }
             ],
             "securityContext": {
@@ -400,7 +432,7 @@
     {
       "name": "VOLUME_CAPACITY",
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
-      "description": "Volume space available for data, e.g. 512Mi, 2Gi",
+      "description": "Volume space available for data",
       "value": "1Gi",
       "required": true
     }

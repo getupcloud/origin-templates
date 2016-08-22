@@ -6,7 +6,7 @@
     "annotations": {
       "description": "An example Django application",
       "tags": "instant-app,python,django",
-      "iconClass": "icon-python"
+      "iconClass": "icon-django"
     }
   },
   "labels": {
@@ -87,7 +87,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "openshift",
-              "name": "python:3.4"
+              "name": "python:3.5"
             }
           }
         },
@@ -119,7 +119,8 @@
       "metadata": {
         "name": "${NAME}",
         "annotations": {
-          "description": "Defines how to deploy the application server"
+          "description": "Defines how to deploy the application server",
+          "iconClass": "icon-python"
         }
       },
       "spec": {
@@ -132,7 +133,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "python"
+                "python-django"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -158,13 +159,29 @@
           "spec": {
             "containers": [
               {
-                "name": "django",
+                "name": "python-django",
                 "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 30,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
                 "env": [
                   {
                     "name": "DATABASE_SERVICE_NAME",
