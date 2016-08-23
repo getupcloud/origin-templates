@@ -90,6 +90,7 @@ objects:
   metadata:
     annotations:
       description: Defines how to deploy the application server
+      iconClass: icon-php
     name: ${NAME}
   spec:
     replicas: 1
@@ -149,6 +150,7 @@ objects:
   metadata:
     annotations:
       description: Defines how to deploy the memcached
+      iconClass: icon-memcached
     name: ${MEMCACHED_SERVICE_NAME}
   spec:
     replicas: 1
@@ -201,6 +203,7 @@ objects:
   metadata:
     annotations:
       description: Defines how to deploy the database
+      iconClass: icon-mysql-database
     name: ${DATABASE_SERVICE_NAME}
   spec:
     replicas: 1

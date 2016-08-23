@@ -61,7 +61,10 @@
       "apiVersion": "v1",
       "metadata": {
         "name": "${NAME}",
-        "creationTimestamp": null
+        "creationTimestamp": null,
+        "annotations": {
+          "iconClass": "icon-postgresql"
+        }
       },
       "spec": {
         "strategy": {
@@ -129,6 +132,20 @@
                     "mountPath": "/var/lib/pgsql/data"
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 5,
+                  "exec": {
+                    "command": [ "/bin/sh", "-i", "-c", "psql -h 127.0.0.1 -U ${POSTGRESQL_USER} -q -d ${POSTGRESQL_DATABASE} -c 'SELECT 1'"]
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 30,
+                  "tcpSocket": {
+                    "port": 5432
+                  }
+                },
                 "terminationMessagePath": "/dev/termination-log",
                 "imagePullPolicy": "IfNotPresent",
                 "capabilities": {},
@@ -191,7 +208,7 @@
     {
       "name": "VOLUME_CAPACITY",
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
-      "description": "Volume space available for data, e.g. 512Mi, 2Gi",
+      "description": "Volume space available for data",
       "value": "1Gi",
       "required": true
     }

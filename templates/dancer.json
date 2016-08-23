@@ -119,7 +119,8 @@
       "metadata": {
         "name": "${NAME}",
         "annotations": {
-          "description": "Defines how to deploy the application server"
+          "description": "Defines how to deploy the application server",
+          "iconClass": "icon-perl"
         }
       },
       "spec": {
@@ -132,7 +133,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "perl"
+                "perl-dancer"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -158,13 +159,29 @@
           "spec": {
             "containers": [
               {
-                "name": "perl",
+                "name": "perl-dancer",
                 "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 30,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
                 "env": [
                   {
                     "name": "PERL_APACHE2_RELOAD",

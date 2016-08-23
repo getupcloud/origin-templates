@@ -136,7 +136,8 @@
       "metadata": {
         "name": "${NAME}",
         "annotations": {
-          "description": "Defines how to deploy the application server"
+          "description": "Defines how to deploy the application server",
+          "iconClass": "icon-perl"
         }
       },
       "spec": {
@@ -146,7 +147,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "perl"
+                "perl-dancer"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -172,13 +173,29 @@
           "spec": {
             "containers": [
               {
-                "name": "perl",
+                "name": "perl-dancer",
                 "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 30,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
                 "env": [
                   {
                     "name": "DATABASE_SERVICE_NAME",
@@ -239,7 +256,8 @@
       "metadata": {
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
-          "description": "Defines how to deploy the database"
+          "description": "Defines how to deploy the database",
+          "iconClass": "icon-mysql-database"
         }
       },
       "spec": {
@@ -250,7 +268,7 @@
           {
             "type": "ImageChange",
             "imageChangeParams": {
-              "automatic": false,
+              "automatic": true,
               "containerNames": [
                 "mysql"
               ],
@@ -305,7 +323,21 @@
                     "name": "${DATABASE_SERVICE_NAME}-data",
                     "mountPath": "/var/lib/mysql/data"
                   }
-                ]
+                ],
+                "readinessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 5,
+                  "exec": {
+                    "command": [ "/bin/sh", "-i", "-c", "MYSQL_PWD='${DATABASE_PASSWORD}' mysql -h 127.0.0.1 -u ${DATABASE_USER} -D ${DATABASE_NAME} -e 'SELECT 1'" ]
+                  }
+                },
+                "livenessProbe": {
+                    "timeoutSeconds": 1,
+                    "initialDelaySeconds": 30,
+                    "tcpSocket": {
+                        "port": 3306
+                    }
+                }
               }
             ],
             "securityContext": {
@@ -402,7 +434,7 @@
     {
       "name": "VOLUME_CAPACITY",
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
-      "description": "Volume space available for data, e.g. 512Mi, 2Gi",
+      "description": "Volume space available for data",
       "value": "1Gi",
       "required": true
     }

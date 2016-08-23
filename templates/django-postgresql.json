@@ -433,7 +433,7 @@
       "name": "VOLUME_CAPACITY",
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
       "description": "Volume space available for data",
-      "value": "1Gi",
+      "value": "5Gi",
       "required": true
     }
   ]

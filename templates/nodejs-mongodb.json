@@ -142,7 +142,8 @@
       "metadata": {
         "name": "${NAME}",
         "annotations": {
-          "description": "Defines how to deploy the application server"
+          "description": "Defines how to deploy the application server",
+          "iconClass": "icon-nodejs"
         }
       },
       "spec": {
@@ -155,7 +156,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "nodejs"
+                "nodejs-mongo"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -181,13 +182,29 @@
           "spec": {
             "containers": [
               {
-                "name": "nodejs",
+                "name": "nodejs-mongo",
                 "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 30,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
                 "env": [
                   {
                     "name": "DATABASE_SERVICE_NAME",
@@ -244,7 +261,8 @@
       "metadata": {
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
-          "description": "Defines how to deploy the database"
+          "description": "Defines how to deploy the database",
+          "iconClass": "icon-mongodb"
         }
       },
       "spec": {
@@ -255,7 +273,7 @@
           {
             "type": "ImageChange",
             "imageChangeParams": {
-              "automatic": false,
+              "automatic": true,
               "containerNames": [
                 "mongodb"
               ],
@@ -314,7 +332,21 @@
                     "name": "${DATABASE_SERVICE_NAME}-data",
                     "mountPath": "/var/lib/mongodb/data"
                   }
-                ]
+                ],
+                "readinessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 3,
+                  "exec": {
+                    "command": [ "/bin/sh", "-i", "-c", "mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval=\"quit()\""]
+                  }
+                },
+                "livenessProbe": {
+                  "timeoutSeconds": 1,
+                  "initialDelaySeconds": 30,
+                  "tcpSocket": {
+                    "port": 27017
+                  }
+                }
               }
             ],
             "securityContext": {
@@ -338,11 +370,6 @@
       "name": "NAME",
       "description": "The exposed hostname that will route to the Nodejs service, if left blank a value will be defaulted.",
       "value": "nodejs"
-    },
-    {
-      "name": "SOURCE_REPOSITORY_URL",
-      "description": "The URL of the repository with your application source code",
-      "value": "https://github.com/openshift/django-ex.git"
     },
     {
       "name": "SOURCE_REPOSITORY_URL",
@@ -405,7 +432,7 @@
     {
       "name": "VOLUME_CAPACITY",
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
-      "description": "Volume space available for data, e.g. 512Mi, 2Gi",
+      "description": "Volume space available for data",
       "value": "1Gi",
       "required": true
     }

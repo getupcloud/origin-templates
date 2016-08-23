@@ -39,6 +39,8 @@ objects:
   metadata:
     creationTimestamp: null
     name: ${NAME}
+    annotations:
+      iconClass: icon-memcached
   labels:
     name: ${NAME}
   spec:

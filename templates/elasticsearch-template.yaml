@@ -41,6 +41,8 @@ objects:
   metadata:
     creationTimestamp: null
     name: ${NAME}
+    annotations:
+      iconClass: icon-elasticsearch
   spec:
     replicas: 1
     selector:

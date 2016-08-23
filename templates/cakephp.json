@@ -119,7 +119,8 @@
       "metadata": {
         "name": "${NAME}",
         "annotations": {
-          "description": "Defines how to deploy the application server"
+          "description": "Defines how to deploy the application server",
+          "iconClass": "icon-php"
         }
       },
       "spec": {
@@ -132,7 +133,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "php"
+                "php-cakephp"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -158,13 +159,29 @@
           "spec": {
             "containers": [
               {
-                "name": "php",
+                "name": "php-cakephp",
                 "image": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080
                   }
                 ],
+                "readinessProbe": {
+                  "timeoutSeconds": 3,
+                  "initialDelaySeconds": 3,
+                  "httpGet": {
+                    "path": "/",
+                    "port": 8080
+                  }
+                },
+                "livenessProbe": {
+                    "timeoutSeconds": 3,
+                    "initialDelaySeconds": 30,
+                    "httpGet": {
+                        "path": "/",
+                        "port": 8080
+                    }
+                },
                 "env": [
                   {
                     "name": "DATABASE_SERVICE_NAME",
