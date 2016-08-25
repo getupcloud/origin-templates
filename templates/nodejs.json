@@ -219,6 +219,11 @@
   ],
   "parameters": [
     {
+      "name": "NAME",
+      "description": "The exposed hostname that will route to the Nodejs service, if left blank a value will be defaulted.",
+      "value": "nodejs"
+    },
+    {
       "name": "SOURCE_REPOSITORY_URL",
       "description": "The URL of the repository with your application source code",
       "value": "https://github.com/openshift/nodejs-ex.git"

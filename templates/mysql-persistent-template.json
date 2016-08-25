@@ -136,7 +136,7 @@
                   "timeoutSeconds": 1,
                   "initialDelaySeconds": 5,
                   "exec": {
-                    "command": [ "/bin/sh", "-i", "-c", "MYSQL_PWD='${DATABASE_PASSWORD}' mysql -h 127.0.0.1 -u ${DATABASE_USER} -D ${DATABASE_NAME} -e 'SELECT 1'" ]
+                    "command": [ "/bin/sh", "-i", "-c", "MYSQL_PWD='${MYSQL_PASSWORD}' mysql -h 127.0.0.1 -u ${MYSQL_USER} -D ${MYSQL_DATABASE} -e 'SELECT 1'" ]
                   }
                 },
                 "livenessProbe": {
