@@ -80,7 +80,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "postgresql:9.4",
+                "name": "postgresql:${POSTGRESQL_VERSION}",
                 "namespace": "openshift"
               },
               "lastTriggeredImage": ""
@@ -210,6 +210,13 @@
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
       "description": "Volume space available for data",
       "value": "1Gi",
+      "required": true
+    },
+    {
+      "name": "POSTGRESQL_VERSION",
+      "displayName": "Versão do PostgreSQL [select:9.5=9.5:9.4=9.4:9.2=9.2]",
+      "description": "Versão do PostgreSQL",
+      "value": "9.5",
       "required": true
     }
   ],

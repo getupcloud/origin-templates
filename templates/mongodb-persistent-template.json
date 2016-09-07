@@ -80,7 +80,7 @@
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "mongodb:3.2",
+                "name": "mongodb:${MONGODB_VERSION}",
                 "namespace": "openshift"
               },
               "lastTriggeredImage": ""
@@ -222,6 +222,13 @@
       "displayName": "Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]",
       "description": "Volume space available for data",
       "value": "1Gi",
+      "required": true
+    },
+    {
+      "name": "MONGODB_VERSION",
+      "displayName": "Versão do MongoDB [select:3.2=3.2:2.6=2.6:2.4=2.4]",
+      "description": "Versão do MongoDB",
+      "value": "3.2",
       "required": true
     }
   ],
