@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: redis-cache-only
+  template: redis-cache
 metadata:
   annotations:
     description: >
@@ -11,7 +11,7 @@ metadata:
     iconClass: icon-redis
     tags: cache,database,redis
   creationTimestamp: null
-  name: redis-cache-only
+  name: redis-cache
 
 objects:
 - kind: Service
@@ -54,9 +54,13 @@ objects:
         labels:
           name: ${NAME}
       spec:
-        contsainers:
+        containers:
         - capabilities: {}
           env:
+          - name: REDIS_DIR
+            value: ${REDIS_DIR}
+          - name: REDIS_DBFILENAME
+            value: ${REDIS_DBFILENAME}
           - name: REDIS_MAX_MEMORY
             value: ${REDIS_MAX_MEMORY}
           - name: REDIS_MAX_MEMORY_POLICY
@@ -94,7 +98,7 @@ parameters:
 - description: Redis service name
   name: NAME
   required: true
-  value: "redis"
+  value: "redis-cache"
 - description: Max memory Redis can use
   name: REDIS_MAX_MEMORY
   required: false
@@ -106,4 +110,12 @@ parameters:
 - description: Extra command line parameters to start redis
   name: REDIS_EXTRA_PARAMETERS
   required: false
-  value: "--maxclients 10000 --tcp-backlog 512 --dbfilename database.rdb --dir /tmp"
+  value: "--maxclients 5000 --tcp-backlog 128"
+- description: Filename for database save operations
+  name: REDIS_DBFILENAME
+  required: false
+  value: "database.rdb"
+- description: Dirname of file on save operations
+  name: REDIS_DIR
+  required: false
+  value: "/tmp/redis"
