@@ -4,7 +4,10 @@ labels:
   template: redis
 metadata:
   annotations:
-    description: Redis is an open source key-value store that functions as a data structure server.
+    description: >
+      Redis is an open source key-value store that functions as a data structure server.
+      This template provides a persistent instance, recomended when Redis can't lose data
+      during service restarts.
     iconClass: icon-redis
     tags: cache,database,redis
   creationTimestamp: null
@@ -71,6 +74,13 @@ objects:
             capabilities: {}
             privileged: false
           terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/redis/data
+            name: ${NAME}-data
+        volumes:
+        - name: ${NAME}-data
+          persistentVolumeClaim:
+            claimName: ${NAME}
         dnsPolicy: ClusterFirst
         restartPolicy: Always
     triggers:
@@ -87,15 +97,25 @@ objects:
     - type: ConfigChange
   status: {}
 
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
+
 parameters:
 - description: Redis service name
   name: NAME
   required: true
   value: "redis"
-- description: Max memory Redis can use
+- description: "Max memory Redis can use (ex: 512MB)"
   name: REDIS_MAX_MEMORY
-  required: true
-  value: "409MB"
+  required: false
 - description: How Redis will select what to remove when maxmemory is reached
   name: REDIS_MAX_MEMORY_POLICY
   required: false
@@ -103,4 +123,9 @@ parameters:
 - description: Extra command line parameters to start redis
   name: REDIS_EXTRA_PARAMETERS
   required: false
-  value: "--maxclients 10000 --tcp-backlog 512 --dbfilename database.rdb --dir /tmp"
+  value: "--maxclients 10000 --tcp-backlog 128 --dbfilename database.rdb --dir /var/lib/redis/data"
+- description: Volume space available for data
+  name: VOLUME_CAPACITY
+  displayName: 'Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]'
+  required: true
+  value: 5Gi
