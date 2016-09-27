@@ -103,4 +103,4 @@ parameters:
 - description: Extra command line parameters to start redis
   name: REDIS_EXTRA_PARAMETERS
   required: false
-  value: "--maxclients 10000 --tcp-backlog 128"
+  value: "--maxclients 10000 --tcp-backlog 512 --dbfilename database.rdb --dir /tmp"
