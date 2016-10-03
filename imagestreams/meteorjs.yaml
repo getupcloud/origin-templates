@@ -10,7 +10,7 @@ spec:
       iconClass: icon-meteorjs
       sampleRepo: https://github.com/getupcloud/meteorjs-ex.git
       supports: meteorjs:4.1,meteorjs:nodejs
-      tags: builder,meteorjs
+      tags: builder,meteorjs,nodejs
       version: "4.1"
     from:
       kind: DockerImage
@@ -21,7 +21,7 @@ spec:
       iconClass: icon-meteorjs
       sampleRepo: https://github.com/getupcloud/meteorjs-ex.git
       supports: meteorjs:latest,meteorjs:4.1,meteorjs:nodejs
-      tags: builder,meteorjs
+      tags: builder,meteorjs,nodejs
       version: "latest"
     from:
       kind: ImageStreamTag
