@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  name: sti-nginx
+spec:
+  tags:
+  - annotations:
+      description: Nginx-1.8 static server
+      getup.io/display-name: Nginx
+      supports: nginx:1.8,nginx
+      tags: builder,nginx
+      version: "1.8"
+    from:
+      kind: DockerImage
+      name: centos/nginx-18-centos7
+    name: "1.8"
+  - annotations:
+      description: Nginx-1.6 static server
+      getup.io/display-name: Nginx
+      supports: nginx:1.6,nginx
+      tags: builder,nginx
+      version: "1.6"
+    from:
+      kind: DockerImage
+      name: centos/nginx-16-centos7
+    name: "1.6"
+  - from:
+      kind: ImageStreamTag
+      name: "1.8"
+    name: "latest"
