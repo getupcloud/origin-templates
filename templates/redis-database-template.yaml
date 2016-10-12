@@ -81,8 +81,6 @@ objects:
           volumeMounts:
           - mountPath: /var/lib/redis/data
             name: ${NAME}-data
-        securityContext:
-          fsGroup: 6379
         volumes:
         - name: ${NAME}-data
           persistentVolumeClaim:

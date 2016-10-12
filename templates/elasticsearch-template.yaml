@@ -92,8 +92,6 @@ objects:
               memory: 512M
         dnsPolicy: ClusterFirst
         restartPolicy: Always
-        securityContext:
-          fsGroup: 1234
         volumes:
         - name: ${NAME}-data
           persistentVolumeClaim:

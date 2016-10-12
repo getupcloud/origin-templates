@@ -142,9 +142,6 @@
                 }
               }
             ],
-            "securityContext": {
-               "fsGroup": 5678
-            },
             "volumes": [
               {
                 "name": "${NAME}-data",

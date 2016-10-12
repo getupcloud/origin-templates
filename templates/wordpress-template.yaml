@@ -240,8 +240,6 @@ objects:
             name: ${DATABASE_SERVICE_NAME}-data
         dnsPolicy: ClusterFirst
         restartPolicy: Always
-        securityContext:
-          fsGroup: 1234
         volumes:
         - name: ${DATABASE_SERVICE_NAME}-data
           persistentVolumeClaim:
