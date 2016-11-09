@@ -181,7 +181,7 @@
             },
             "from": {
               "kind": "DockerImage",
-              "name": "ryanj/centos7-s2i-nodejs:4.4.5"
+              "name": "centos/nodejs-4-centos7:latest"
             }
           },
           {
