@@ -1,0 +1,205 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: crond
+
+parameters:
+
+- name: NAME
+  displayName: "Application name"
+  value: cron
+
+- name: CRON_SCHEDULE
+  displayName: "Cron Schedule"
+  description: "Format: minute (0-59) hour (0-23) day of month (1-31) month (1-12) day of week (0-7, where 0 is Sun)"
+  value: "* * * * *"
+
+- name: COMMAND
+  displayName: "Command to execute"
+  value: "echo $(date): Hello World"
+
+- name: DOCKER_REGISTRY
+  displayName: "Docker Registry"
+  description: |-
+    Docker registry address to load Job image from.
+    Usually it should be provided by your openshift
+    admin if you want to run an image from your own namespace.
+  value: 172.30.34.145:5000/
+
+- name: JOB_IMAGE_NAMESPACE
+  displayName: "Namespace of the image where to run the Job"
+  description: |-
+    The project/namespace of the location for the docker image.
+    Usually it is the same name of the current namespace
+  required: true
+
+- name: JOB_IMAGE_NAME
+  displayName: "Image where to run the Job"
+  required: true
+
+- name: JOB_IMAGE_TAG
+  displayName: "Image tag"
+  value: latest
+
+objects:
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${NAME}-config
+  data:
+    crontab: |-
+      SHELL=/bin/bash
+      PATH=/sbin:/bin:/usr/sbin:/usr/bin
+      MAILTO=off
+      # For details see man 4 crontabs
+      # Example of job definition:
+      # .---------------- minute (0 - 59)
+      # |  .------------- hour (0 - 23)
+      # |  |  .---------- day of month (1 - 31)
+      # |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+      # |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+      # |  |  |  |  |
+      # *  *  *  *  * user-name  command to be executed
+
+      # cleanup jobs every 5 minutes
+      */5  *  *  *  * cron clean-jobs &> /var/log/clean-jobs.log
+
+      # run user-defined job
+      ${CRON_SCHEDULE} cron run-job default &> /var/log/run-job.log
+
+      # EOF
+
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${NAME}-jobs
+  data:
+    default: |-
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        generateName: ${NAME}-${JOB_IMAGE_NAME}-
+        labels:
+          app: ${NAME}-${JOB_IMAGE_NAME}
+      spec:
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            job: ${NAME}-${JOB_IMAGE_NAME}
+        parallelism: 1 # how many pods running in parallel should execute a job
+        completions: 1 # how many successful pod completions are needed to finish a job
+        activeDeadlineSeconds: 86400 # job timeout in seconds
+        template:
+          metadata:
+              labels:
+                job: ${NAME}-${JOB_IMAGE_NAME}
+          spec:
+            serviceAccount: deployer
+            containers:
+            - env:
+              - name: PATH
+                value: "/opt/app-root/src/bin:/opt/app-root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              - name: STI_SCRIPTS_URL
+                value: "image:///usr/libexec/s2i"
+              - name: STI_SCRIPTS_PATH
+                value: "/usr/libexec/s2i"
+              - name: HOME
+                value: "/opt/app-root/src"
+              - name: BASH_ENV
+                value: "/opt/app-root/etc/scl_enable"
+              - name: ENV
+                value: "/opt/app-root/etc/scl_enable"
+              - name: PROMPT_COMMAND
+                value: ". /opt/app-root/etc/scl_enable"
+              - name: COMMAND
+                value: "${COMMAND}"
+              - name: JOBS_DIR
+                value: "/etc/jobs/"
+              name: job
+              image: ${DOCKER_REGISTRY}${JOB_IMAGE_NAMESPACE}/${JOB_IMAGE_NAME}:${JOB_IMAGE_TAG}
+              command: ["/bin/bash", "-c", "$(COMMAND)"]
+              resources:
+                limits:
+                  cpu: 731m
+                  memory: 1Gi
+                requests:
+                  cpu: 18m
+                  memory: 256Mi
+            restartPolicy: Never
+
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      iconClass: icon-mascot
+    labels:
+      app: ${NAME}
+      template: crond
+    name: ${NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+          deploymentconfig: ${NAME}
+      spec:
+        containers:
+        - env:
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          - name: STI_SCRIPTS_URL
+            value: image:///usr/libexec/s2i
+          - name: STI_SCRIPTS_PATH
+            value: /usr/libexec/s2i
+          - name: HOME
+            value: "/opt/app-root/src"
+          - name: CRON_VERSION
+            value: "1.0"
+          - name: API_ENDPOINT
+            value: 'https://api.getupcloud.com'
+          - name: COMPLETION_LIMIT ## remove Jobs older than COMPLETION_LIMIT secs
+            value: '3600'
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          image: crond:latest
+          imagePullPolicy: Always
+          name: crond
+          resources:
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - name: volume-jobs
+            mountPath: /etc/jobs
+          - name: volume-config
+            mountPath: /config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: volume-jobs
+          configMap:
+            name: ${NAME}-jobs
+        - name: volume-config
+          configMap:
+            name: ${NAME}-config
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - crond
+        from:
+          kind: ImageStreamTag
+          name: crond:latest
+          namespace: openshift
+    - type: ConfigChange
