@@ -1,0 +1,269 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: meteorjs-mongodb
+metadata:
+  annotations:
+    description: An example Meteor.js application with a MongoDB database
+    getup.io/display-name: Meteorjs + Mongodb
+    iconClass: icon-meteorjs
+    tags: instant-app,nodejs,meteorjs,mongodb
+  creationTimestamp: null
+  name: meteorjs-mongodb
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes and load balances the application pods
+    name: ${NAME}
+  spec:
+    ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: ${NAME}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${NAME}
+  spec:
+    host: ${APPLICATION_DOMAIN}
+    tls:
+      insecureEdgeTerminationPolicy: Allow
+      termination: edge
+    to:
+      kind: Service
+      name: ${NAME}
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+    name: ${NAME}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      description: Defines how to build the application
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        ref: ${SOURCE_REPOSITORY_REF}
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: meteorjs:4.1
+          namespace: openshift
+      type: Source
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+      iconClass: icon-meteorjs
+    name: ${NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${NAME}
+    strategy:
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          name: ${NAME}
+        name: ${NAME}
+      spec:
+        containers:
+        - env:
+          - name: MONGO_URL
+            value: mongodb://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_SERVICE_NAME}:27017/${DATABASE_NAME}
+          image: ${NAME}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          name: meteorjs
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 15
+            timeoutSeconds: 10
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - meteorjs
+        from:
+          kind: ImageStreamTag
+          name: ${NAME}:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes the database server
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+    selector:
+      name: ${DATABASE_SERVICE_NAME}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the database
+      iconClass: icon-mongodb
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${DATABASE_SERVICE_NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: ${DATABASE_SERVICE_NAME}
+        name: ${DATABASE_SERVICE_NAME}
+      spec:
+        containers:
+        - env:
+          - name: MONGODB_USER
+            value: ${DATABASE_USER}
+          - name: MONGODB_PASSWORD
+            value: ${DATABASE_PASSWORD}
+          - name: MONGODB_DATABASE
+            value: ${DATABASE_NAME}
+          - name: MONGODB_ADMIN_PASSWORD
+            value: ${DATABASE_ADMIN_PASSWORD}
+          image: mongodb
+          livenessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 27017
+            timeoutSeconds: 1
+          name: mongodb
+          ports:
+          - containerPort: 27017
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+                --eval="quit()"
+            initialDelaySeconds: 3
+            timeoutSeconds: 1
+          volumeMounts:
+          - mountPath: /var/lib/mongodb/data
+            name: ${DATABASE_SERVICE_NAME}-data
+        volumes:
+        - name: ${DATABASE_SERVICE_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${DATABASE_SERVICE_NAME}
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - mongodb
+        from:
+          kind: ImageStreamTag
+          name: mongodb:3.2
+          namespace: openshift
+      type: ImageChange
+    - type: ConfigChange
+parameters:
+- description: The exposed hostname that will route to the Meteor.js service, if left
+    blank a value will be defaulted.
+  name: NAME
+  value: meteorjs
+- description: The URL of the repository with your application source code
+  name: SOURCE_REPOSITORY_URL
+  value: https://github.com/meteor/todos.git
+- description: Set this to a branch name, tag or other ref of your repository if you
+    are not using the default branch
+  name: SOURCE_REPOSITORY_REF
+- description: Set this to the relative path to your project if it is not in the root
+    of your repository
+  name: CONTEXT_DIR
+- description: The exposed hostname that will route to the Meteor.js service, if left
+    blank a value will be defaulted.
+  name: APPLICATION_DOMAIN
+- description: A secret string used to configure the GitHub webhook
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+- description: A secret string used to configure the Generic webhook
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
+- description: Database service name
+  name: DATABASE_SERVICE_NAME
+  value: mongodb
+- description: Username for MongoDB user that will be used for accessing the database
+  from: user[A-Z0-9]{3}
+  generate: expression
+  name: DATABASE_USER
+- description: Password for the MongoDB user
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: DATABASE_PASSWORD
+- description: Database name
+  name: DATABASE_NAME
+  value: meteorjs
+- description: Password for the database admin user
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: DATABASE_ADMIN_PASSWORD
+- description: Volume space available for data
+  displayName: Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]
+  name: VOLUME_CAPACITY
+  required: true
+  value: 5Gi
