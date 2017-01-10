@@ -14,13 +14,22 @@ spec:
       kind: DockerImage
       name: getupcloud/crond:1.0
 
+  - name: "1.4"
+    annotations:
+      description: Crond to run Jobs from user images
+      iconClass: icon-mascot
+      tags: crond,cron,jobs
+      version: "1.4"
+    from:
+      kind: DockerImage
+      name: getupcloud/crond:1.4
+
   - name: "latest"
     annotations:
       description: Crond to run Jobs from user images
       iconClass: icon-mascot
       tags: crond,cron,jobs
-      version: "1.0"
+      version: "1.4"
     from:
       kind: ImageStreamTag
-      name: "1.0"
-
+      name: "1.4"

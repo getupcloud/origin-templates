@@ -44,6 +44,11 @@ parameters:
 objects:
 
 - apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: cron
+
+- apiVersion: v1
   kind: ConfigMap
   metadata:
     name: ${NAME}-config
@@ -62,7 +67,7 @@ objects:
       # |  |  |  |  |
       # *  *  *  *  * user-name  command to be executed
 
-      # cleanup jobs every 5 minutes
+      # cleanup jobs older than 1h every 5 minutes
       */5  *  *  *  * cron clean-jobs &> /var/log/clean-jobs.log
 
       # run user-defined job
@@ -80,22 +85,22 @@ objects:
       apiVersion: batch/v1
       kind: Job
       metadata:
-        generateName: ${NAME}-${JOB_IMAGE_NAME}-
+        generateName: default-${NAME}-${JOB_IMAGE_NAME}-
         labels:
-          app: ${NAME}-${JOB_IMAGE_NAME}
+          app: ${NAME}
       spec:
         apiVersion: v1
         kind: Pod
         metadata:
           labels:
-            job: ${NAME}-${JOB_IMAGE_NAME}
+            job: default-${NAME}-${JOB_IMAGE_NAME}
         parallelism: 1 # how many pods running in parallel should execute a job
         completions: 1 # how many successful pod completions are needed to finish a job
         activeDeadlineSeconds: 86400 # job timeout in seconds
         template:
           metadata:
               labels:
-                job: ${NAME}-${JOB_IMAGE_NAME}
+                job: default-${NAME}-${JOB_IMAGE_NAME}
           spec:
             serviceAccount: deployer
             containers:
@@ -121,13 +126,6 @@ objects:
               name: job
               image: ${DOCKER_REGISTRY}${JOB_IMAGE_NAMESPACE}/${JOB_IMAGE_NAME}:${JOB_IMAGE_TAG}
               command: ["/bin/bash", "-c", "$(COMMAND)"]
-              resources:
-                limits:
-                  cpu: 731m
-                  memory: 1Gi
-                requests:
-                  cpu: 18m
-                  memory: 256Mi
             restartPolicy: Never
 
 
@@ -152,6 +150,7 @@ objects:
           app: ${NAME}
           deploymentconfig: ${NAME}
       spec:
+        serviceAccount: cron
         containers:
         - env:
           - name: PATH
@@ -165,7 +164,7 @@ objects:
           - name: CRON_VERSION
             value: "1.0"
           - name: API_ENDPOINT
-            value: 'https://api.getupcloud.com'
+            value: 'https://kubernetes.default.svc.cluster.local:443'
           - name: COMPLETION_LIMIT ## remove Jobs older than COMPLETION_LIMIT secs
             value: '3600'
           - name: NAMESPACE
@@ -193,6 +192,7 @@ objects:
           configMap:
             name: ${NAME}-config
     triggers:
+    - type: ConfigChange
     - type: ImageChange
       imageChangeParams:
         automatic: true
@@ -202,4 +202,3 @@ objects:
           kind: ImageStreamTag
           name: crond:latest
           namespace: openshift
-    - type: ConfigChange
