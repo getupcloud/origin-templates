@@ -1,0 +1,231 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: dump-database
+  getup.io/display-name: "Dump Database"
+
+
+parameters:
+
+- name: NAME
+  displayName: "Application name"
+  value: dump-database
+  required: true
+
+- name: FREQUENCY_IN_HOURS
+  displayName: "Frequency to generate dumps, in hours"
+  description: "Format: minute (0-59) hour (0-23) day of month (1-31) month (1-12) day of week (0-7, where 0 is Sun)"
+  value: 6
+  required: true
+
+- name: LABEL_SELECTOR
+  displayName: "Database Label Selector"
+  description: "Add this label to DeploymentConfigs of databases you want to dump"
+  value: "dump-database=true"
+  required: true
+
+## Azure Blob Storage Credentials
+
+- name: AZURE_ACCOUNT_NAME
+  displayName: "Azure Account Name"
+  description: "Fill in with you want o upload to Azure"
+
+- name: AZURE_ACCOUNT_KEY
+  displayName: "Azure Account Key"
+  description: "Fill in with you want o upload to Azure"
+
+- name: AZURE_CONTAINER
+  displayName: "Azure Container"
+  description: "Fill in with you want o upload to Azure"
+
+## AWS S3 Credentials
+
+- name: AWS_ACCESS_KEY_ID
+  displayName: "AWS Access Key Id"
+  description: "Fill in with you want o upload to AWS"
+
+- name: AWS_SECRET_ACCESS_KEY
+  displayName: "AWS Secret Access Key"
+  description: "Fill in with you want o upload to AWS"
+
+- name: AWS_REGION
+  displayName: "AWS Region"
+  description: "Fill in with you want o upload to AWS"
+
+- name: AWS_S3_BUCKET_NAME
+  displayName: "AWS S3 Bucket Name"
+  description: "Fill in with you want o upload to AWS"
+
+
+objects:
+
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: dump-database
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${NAME}-config
+  data:
+    crontab: |-
+      SHELL=/bin/bash
+      PATH=/sbin:/bin:/usr/sbin:/usr/bin
+      MAILTO=off
+      # For details see man 4 crontabs
+      # Example of job definition:
+      # .---------------- minute (0 - 59)
+      # |  .------------- hour (0 - 23)
+      # |  |  .---------- day of month (1 - 31)
+      # |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+      # |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+      # |  |  |  |  |
+      # *  *  *  *  * user-name  command to be executed
+
+      # remove old jobs
+      30  *  *  *  * cron clean-jobs &> /var/log/clean-jobs.log
+
+      # dump all databases
+      1 */${FREQUENCY_IN_HOURS} * * * cron run-job dump-database &> /var/log/dump-database.log
+
+      # EOF
+
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${NAME}-jobs
+  data:
+    dump-database: |-
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        generateName: ${NAME}-
+        labels:
+          app: ${NAME}
+      spec:
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            job: ${NAME}
+        parallelism: 1 # how many pods running in parallel should execute a job
+        completions: 1 # how many successful pod completions are needed to finish a job
+        activeDeadlineSeconds: 86400 # job timeout in seconds
+        template:
+          metadata:
+              labels:
+                job: ${NAME}
+          spec:
+            serviceAccount: dump-database
+            containers:
+            - env:
+              - name: PATH
+                value: "/opt/app-root/src/bin:/opt/app-root/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              - name: NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: LABEL_SELECTOR
+                value: "${LABEL_SELECTOR}"
+
+              ##
+              ## Insert below the credentials to your object storage
+              ##
+
+              ## Azure Blob Storage Credentials
+              - name: AZURE_ACCOUNT_NAME
+                value: "${AZURE_ACCOUNT_NAME}"
+              - name: AZURE_ACCOUNT_KEY
+                value: "${AZURE_ACCOUNT_KEY}"
+              - name: AZURE_CONTAINER
+                value: "${AZURE_CONTAINER}"
+
+              ## AWS S3 Credentials
+              - name: AWS_ACCESS_KEY_ID
+                value: "${AWS_ACCESS_KEY_ID}"
+              - name: AWS_SECRET_ACCESS_KEY
+                value: "${AWS_SECRET_ACCESS_KEY}"
+              - name: AWS_REGION
+                value: "${AWS_REGION}"
+              - name: AWS_S3_BUCKET_NAME
+                value: "${AWS_S3_BUCKET_NAME}"
+
+              name: job
+              image: getupcloud/backup:latest
+            restartPolicy: Never
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      iconClass: icon-mascot
+    labels:
+      app: ${NAME}
+      template: dump-database
+    name: ${NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+          deploymentconfig: ${NAME}
+      spec:
+        serviceAccount: dump-database
+        containers:
+        - env:
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          - name: STI_SCRIPTS_URL
+            value: image:///usr/libexec/s2i
+          - name: STI_SCRIPTS_PATH
+            value: /usr/libexec/s2i
+          - name: HOME
+            value: "/opt/app-root/src"
+          - name: CRON_VERSION
+            value: "1.0"
+          - name: API_ENDPOINT
+            value: 'https://kubernetes.default.svc.cluster.local:443'
+          - name: COMPLETION_LIMIT ## remove Jobs older than COMPLETION_LIMIT secs
+            value: "604800"
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          image: crond:latest
+          imagePullPolicy: Always
+          name: crond
+          resources:
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - name: volume-jobs
+            mountPath: /etc/jobs
+          - name: volume-config
+            mountPath: /config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: volume-jobs
+          configMap:
+            name: ${NAME}-jobs
+        - name: volume-config
+          configMap:
+            name: ${NAME}-config
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - crond
+        from:
+          kind: ImageStreamTag
+          name: crond:latest
+          namespace: openshift
