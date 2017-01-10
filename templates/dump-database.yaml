@@ -15,7 +15,6 @@ parameters:
 
 - name: FREQUENCY_IN_HOURS
   displayName: "Frequency to generate dumps, in hours"
-  description: "Format: minute (0-59) hour (0-23) day of month (1-31) month (1-12) day of week (0-7, where 0 is Sun)"
   value: "6"
   required: true
 
