@@ -158,6 +158,7 @@ objects:
   metadata:
     annotations:
       description: Defines how to deploy the database
+      tags: "database,mongodb"
       iconClass: icon-mongodb
     name: ${DATABASE_SERVICE_NAME}
   spec:

@@ -264,6 +264,7 @@
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
           "description": "Defines how to deploy the database",
+          "tags": "database,postgres",
           "iconClass": "icon-postgresql"
         }
       },

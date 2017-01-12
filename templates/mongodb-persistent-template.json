@@ -63,7 +63,8 @@
         "name": "${NAME}",
         "creationTimestamp": null,
         "annotations": {
-          "iconClass": "icon-mongodb"
+          "iconClass": "icon-mongodb",
+          "tags": "database,mongodb"
         }
       },
       "spec": {

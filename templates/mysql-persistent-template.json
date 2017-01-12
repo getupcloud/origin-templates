@@ -63,7 +63,8 @@
         "name": "${NAME}",
         "creationTimestamp": null,
         "annotations": {
-          "iconClass": "icon-mysql-database"
+          "iconClass": "icon-mysql-database",
+          "tags": "database,mysql"
         }
       },
       "spec": {

@@ -262,7 +262,8 @@
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
           "description": "Defines how to deploy the database",
-          "iconClass": "icon-mongodb"
+          "iconClass": "icon-mongodb",
+          "tags": "database,mongodb"
         }
       },
       "spec": {

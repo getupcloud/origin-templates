@@ -283,6 +283,7 @@
         "name": "${DATABASE_SERVICE_NAME}",
         "annotations": {
           "description": "Defines how to deploy the database",
+          "tags": "database,mysql",
           "iconClass": "icon-mysql-database"
         }
       },

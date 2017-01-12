@@ -63,7 +63,8 @@
         "name": "${NAME}",
         "creationTimestamp": null,
         "annotations": {
-          "iconClass": "icon-postgresql"
+          "iconClass": "icon-postgresql",
+          "tags": "database,postgresql"
         }
       },
       "spec": {

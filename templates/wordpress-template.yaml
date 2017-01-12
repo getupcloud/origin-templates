@@ -204,6 +204,7 @@ objects:
     annotations:
       description: Defines how to deploy the database
       iconClass: icon-mysql-database
+      tags: "database,mysql"
     name: ${DATABASE_SERVICE_NAME}
   spec:
     replicas: 1
