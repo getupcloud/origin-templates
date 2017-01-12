@@ -4,6 +4,7 @@ metadata:
   name: dump-database
   annotations:
     getup.io/display-name: "Dump Database"
+    tags: 'backup,cron'
 
 
 parameters:
