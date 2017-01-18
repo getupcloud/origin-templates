@@ -1,15 +1,14 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: wordpress
+  template: wordpress-statefull
 metadata:
   annotations:
-    description: 'An Wordpress application with a MySQL database and Memcached '
+    description: 'An Wordpress application with a MySQL database'
     iconClass: icon-php
     tags: instant-app,php,wordpress,cms,mysql
   creationTimestamp: null
-  name: wordpress
-
+  name: wordpress-statefull
 objects:
 - apiVersion: v1
   kind: Service
@@ -61,6 +60,9 @@ objects:
       type: Git
     strategy:
       sourceStrategy:
+        env:
+        - name: WITHVOLUME
+          value: "yes"
         from:
           kind: ImageStreamTag
           name: php:5.6
@@ -86,6 +88,16 @@ objects:
       requests:
         storage: ${VOLUME_CAPACITY}
 - apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY_WEB}
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     annotations:
@@ -97,7 +109,7 @@ objects:
     selector:
       name: ${NAME}
     strategy:
-      type: Rolling
+      type: Recreate
     template:
       metadata:
         labels:
@@ -114,14 +126,25 @@ objects:
             value: ${DATABASE_USER}
           - name: DATABASE_PASSWORD
             value: ${DATABASE_PASSWORD}
-          - name: MEMCACHED_SERVICE_NAME
-            value: ${MEMCACHED_SERVICE_NAME}
           - name: WORDPRESS_SECRET_TOKEN
             value: ${WORDPRESS_SECRET_TOKEN}
+          - name: FS_METHOD
+            value: direct
+          - name: WITHVOLUME
+            value: "yes"
           image: ${NAME}
           name: wordpress
           ports:
           - containerPort: 8080
+          volumeMounts:
+          - mountPath: /opt/app-root/src/data
+            name: ${NAME}-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        volumes:
+        - name: ${NAME}-data
+          persistentVolumeClaim:
+            claimName: ${NAME}
     triggers:
     - imageChangeParams:
         automatic: true
@@ -130,59 +153,6 @@ objects:
         from:
           kind: ImageStreamTag
           name: ${NAME}:latest
-      type: ImageChange
-    - type: ConfigChange
-- apiVersion: v1
-  kind: Service
-  metadata:
-    annotations:
-      description: Exposes the memcached server
-    name: ${MEMCACHED_SERVICE_NAME}
-  spec:
-    ports:
-    - name: ${MEMCACHED_SERVICE_NAME}
-      port: 11211
-      targetPort: 11211
-    selector:
-      name: ${MEMCACHED_SERVICE_NAME}
-- apiVersion: v1
-  kind: DeploymentConfig
-  metadata:
-    annotations:
-      description: Defines how to deploy the memcached
-      iconClass: icon-memcached
-    name: ${MEMCACHED_SERVICE_NAME}
-  spec:
-    replicas: 1
-    selector:
-      name: ${MEMCACHED_SERVICE_NAME}
-    strategy:
-      type: Recreate
-    template:
-      metadata:
-        labels:
-          name: ${MEMCACHED_SERVICE_NAME}
-        name: ${MEMCACHED_SERVICE_NAME}
-      spec:
-        containers:
-        - env:
-          - name: MEMCACHED_MAX_MEMORY
-            value: ${MEMCACHED_MAX_MEMORY}
-          - name: MEMCACHED_MAX_CONNECTIONS
-            value: ${MEMCACHED_MAX_CONNECTIONS}
-          image: memcached
-          name: memcached
-          ports:
-          - containerPort: 11211
-    triggers:
-    - imageChangeParams:
-        automatic: false
-        containerNames:
-        - memcached
-        from:
-          kind: ImageStreamTag
-          name: memcached:latest
-          namespace: openshift
       type: ImageChange
     - type: ConfigChange
 - apiVersion: v1
@@ -282,9 +252,6 @@ parameters:
 - description: Database service name
   name: DATABASE_SERVICE_NAME
   value: mysql
-- description: Memcached service name
-  name: MEMCACHED_SERVICE_NAME
-  value: memcached
 - description: 'Database engine: postgresql, mysql or sqlite (default)'
   name: DATABASE_ENGINE
   value: mysql
@@ -298,18 +265,17 @@ parameters:
   from: '[a-zA-Z0-9]{16}'
   generate: expression
   name: DATABASE_PASSWORD
-- description: Max simultaneous connections
-  name: MEMCACHED_MAX_CONNECTIONS
-  value: "10000"
-- description: Max memory to use for items in megabytes
-  name: MEMCACHED_MAX_MEMORY
-  value: "409"
 - description: Set this to a long random string
   from: '[\w]{50}'
   generate: expression
   name: WORDPRESS_SECRET_TOKEN
-- description: Volume space available for data
+- description: Volume space available for Database data
   name: VOLUME_CAPACITY
   displayName: 'Tamanho do Volume de dados [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]'
+  required: true
+  value: 1Gi
+- description: Volume space available for WORDPRESS data
+  name: VOLUME_CAPACITY_WEB
+  displayName: 'Tamanho do Volume de dados para WEB [select:5Gi=5GB:10Gi=10GB:20Gi=20GB]'
   required: true
   value: 1Gi
