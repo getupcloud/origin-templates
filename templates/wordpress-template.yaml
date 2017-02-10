@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: wordpress-statefull
+  template: wordpress
 metadata:
   annotations:
     description: 'An Wordpress application with a MySQL database'
     iconClass: icon-php
     tags: instant-app,php,wordpress,cms,mysql
   creationTimestamp: null
-  name: wordpress-statefull
+  name: wordpress
 objects:
 - apiVersion: v1
   kind: Service
