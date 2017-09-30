@@ -67,7 +67,7 @@ objects:
             value: ${REDIS_MAX_MEMORY_POLICY}
           - name: REDIS_EXTRA_PARAMETERS
             value: ${REDIS_EXTRA_PARAMETERS}
-          image: redis
+          image: docker.io/getupcloud/redis:${REDIS_VERSION}
           imagePullPolicy: IfNotPresent
           name: redis
           ports:
@@ -82,12 +82,12 @@ objects:
         restartPolicy: Always
     triggers:
     - imageChangeParams:
-        automatic: false
+        automatic: true
         containerNames:
         - redis
         from:
           kind: ImageStreamTag
-          name: redis:latest
+          name: redis:${REDIS_VERSION}
           namespace: openshift
         lastTriggeredImage: ""
       type: ImageChange
@@ -119,3 +119,8 @@ parameters:
   name: REDIS_DIR
   required: false
   value: "/tmp/redis"
+- description: Redis version
+  displayName: Redis version [select:3.0=3.0:3.2=3.2:4.0=4.0]
+  name: REDIS_VERSION
+  required: true
+  value: "3.2"

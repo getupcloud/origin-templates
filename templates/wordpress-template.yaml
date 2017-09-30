@@ -217,7 +217,7 @@ objects:
             claimName: ${DATABASE_SERVICE_NAME}
     triggers:
     - imageChangeParams:
-        automatic: false
+        automatic: true
         containerNames:
         - mysql
         from:

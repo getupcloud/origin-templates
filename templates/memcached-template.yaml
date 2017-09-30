@@ -82,7 +82,7 @@ objects:
         restartPolicy: Always
     triggers:
     - imageChangeParams:
-        automatic: false
+        automatic: true
         containerNames:
         - memcached
         from:

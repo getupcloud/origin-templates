@@ -5,6 +5,26 @@ metadata:
   creationTimestamp: null
 spec:
   tags:
+  - name: latest
+    from:
+      kind: ImageStreamTag
+      name: "4.0"
+  - name: "4.0"
+    annotations:
+      description: Redis server
+      tags: redis,cache,db
+      version: "4.0"
+    from:
+      kind: DockerImage
+      name: getupcloud/redis:latest
+  - name: "3.2"
+    annotations:
+      description: Redis server
+      tags: redis,cache,db
+      version: "3.2"
+    from:
+      kind: DockerImage
+      name: getupcloud/redis:3.2
   - name: "3.0"
     annotations:
       description: Redis server
@@ -12,8 +32,4 @@ spec:
       version: "3.0"
     from:
       kind: DockerImage
-      name: getupcloud/redis:latest
-  - name: latest
-    from:
-      kind: ImageStreamTag
-      name: "3.0"
+      name: getupcloud/redis:3.0
