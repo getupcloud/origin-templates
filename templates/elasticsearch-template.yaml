@@ -71,7 +71,7 @@ objects:
             value: ${ELASTICSEARCH_LOG_LEVEL}
           image: elasticsearch
           imagePullPolicy: IfNotPresent
-          name: elasticsearch
+          name: getupcloud/elasticsearch-11:latest
           ports:
           - containerPort: 9200
             protocol: TCP
