@@ -67,7 +67,7 @@ objects:
             value: ${REDIS_MAX_MEMORY_POLICY}
           - name: REDIS_EXTRA_PARAMETERS
             value: ${REDIS_EXTRA_PARAMETERS}
-          image: getupcloud/redis:${REDIS_VERSION}
+          image: getupcloud/redis-${REDIS_VERSION}:latest
           imagePullPolicy: IfNotPresent
           name: redis
           ports:
@@ -120,7 +120,7 @@ parameters:
   required: false
   value: "/tmp/redis"
 - description: Redis version
-  displayName: Redis version [select:3.0=3.0:3.2=3.2:4.0=4.0]
+  displayName: Redis version [select:30=3.0:32=3.2:40=4.0]
   name: REDIS_VERSION
   required: true
   value: "3.2"
