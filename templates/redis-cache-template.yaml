@@ -67,7 +67,7 @@ objects:
             value: ${REDIS_MAX_MEMORY_POLICY}
           - name: REDIS_EXTRA_PARAMETERS
             value: ${REDIS_EXTRA_PARAMETERS}
-          image: docker.io/getupcloud/redis:${REDIS_VERSION}
+          image: getupcloud/redis:${REDIS_VERSION}
           imagePullPolicy: IfNotPresent
           name: redis
           ports:
